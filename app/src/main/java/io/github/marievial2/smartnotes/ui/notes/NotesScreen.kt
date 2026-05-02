@@ -1,4 +1,4 @@
-package io.github.marievial2.smartnotes.ui.theme.screens
+package io.github.marievial2.smartnotes.ui.notes
 
 import android.annotation.SuppressLint
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -17,6 +17,6 @@ fun HomeScreen(
     Scaffold(
 
     ) {
-        Text(text="Bienvenue sur SmartNotes")
+        Text(text = "Bienvenue sur SmartNotes")
     }
 }

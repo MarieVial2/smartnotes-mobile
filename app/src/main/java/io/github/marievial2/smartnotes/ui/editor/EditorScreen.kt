@@ -1,4 +1,4 @@
-package io.github.marievial2.smartnotes.ui.theme.screens
+package io.github.marievial2.smartnotes.ui.editor
 
 import android.annotation.SuppressLint
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -17,6 +17,6 @@ fun AddArticleScreen(
     Scaffold(
 
     ) {
-        Text(text="Ajouter un article")
+        Text(text = "Ajouter un article")
     }
 }

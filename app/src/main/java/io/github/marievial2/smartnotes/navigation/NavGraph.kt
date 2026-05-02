@@ -6,7 +6,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import io.github.marievial2.smartnotes.ui.theme.screens.HomeScreen
+
 
 
 @Composable
@@ -20,18 +20,28 @@ fun AppNavGraph(
 
 
         composable(Routes.HOME) {
-            HomeScreen(
+            NotesScreen(
                 navController = navController
             )
         }
 
 
         composable(Routes.ADD) {
-            AddArticleScreen(
+            EditorScreen(
                 navController = navController
             )
         }
 
 
     }
+}
+
+@Composable
+fun NotesScreen(navController: NavHostController) {
+    TODO("Not yet implemented")
+}
+
+@Composable
+fun EditorScreen(navController: NavHostController) {
+    TODO("Not yet implemented")
 }
