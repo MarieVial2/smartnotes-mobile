@@ -1,3 +1,7 @@
+session_grill.md
+echangesAvecClaude.odt
+SmartNotes.md
+/.idea/vcs.xml
 *.iml
 .gradle
 /local.properties
@@ -13,3 +17,4 @@
 .externalNativeBuild
 .cxx
 local.properties
+.claude
