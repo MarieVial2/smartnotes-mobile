@@ -1,6 +1,5 @@
-package com.example.smartnotes.ui.theme
+package io.github.marievial2.smartnotes.ui.theme
 
-import android.app.Activity
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme

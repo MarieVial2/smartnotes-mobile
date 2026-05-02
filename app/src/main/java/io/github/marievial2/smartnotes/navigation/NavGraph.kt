@@ -1,14 +1,12 @@
-package com.example.smartnotes.navigation
+package io.github.marievial2.smartnotes.navigation
 
 
 import androidx.compose.runtime.Composable
-import androidx.navigation.NavType
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import androidx.navigation.navArgument
-import com.example.smartnotes.ui.theme.screens.HomeScreen
+import io.github.marievial2.smartnotes.ui.theme.screens.HomeScreen
 
 
 @Composable

@@ -1,4 +1,4 @@
-package com.example.smartnotes.ui.theme
+package io.github.marievial2.smartnotes.ui.theme
 
 import androidx.compose.material3.Typography
 import androidx.compose.ui.text.TextStyle

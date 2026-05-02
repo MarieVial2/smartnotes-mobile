@@ -1,4 +1,4 @@
-package com.example.smartnotes.ui.theme.screens
+package io.github.marievial2.smartnotes.ui.theme.screens
 
 import android.annotation.SuppressLint
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -10,13 +10,13 @@ import androidx.navigation.NavHostController
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AddArticleScreen(
+fun HomeScreen(
     navController: NavHostController
 ) {
 
     Scaffold(
 
     ) {
-        Text(text="Ajouter un article")
+        Text(text="Bienvenue sur SmartNotes")
     }
 }

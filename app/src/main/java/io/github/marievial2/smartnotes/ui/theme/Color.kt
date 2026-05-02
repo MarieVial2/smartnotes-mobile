@@ -1,4 +1,4 @@
-package com.example.smartnotes.ui.theme
+package io.github.marievial2.smartnotes.ui.theme
 
 import androidx.compose.ui.graphics.Color
 

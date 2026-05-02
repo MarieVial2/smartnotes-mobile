@@ -4,7 +4,7 @@ plugins {
 }
 
 android {
-    namespace = "com.example.smartnotes"
+    namespace = "io.github.marievial2.smartnotes"
     compileSdk {
         version = release(36) {
             minorApiLevel = 1
@@ -12,7 +12,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.example.smartnotes"
+        applicationId = "io.github.marievial2.smartnotes"
         minSdk = 29
         targetSdk = 36
         versionCode = 1

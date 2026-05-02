@@ -1,4 +1,4 @@
-package com.example.smartnotes
+package io.github.marievial2.smartnotes
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -11,7 +11,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import com.example.smartnotes.ui.theme.SmartNotesTheme
+import io.github.marievial2.smartnotes.ui.theme.SmartNotesTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
