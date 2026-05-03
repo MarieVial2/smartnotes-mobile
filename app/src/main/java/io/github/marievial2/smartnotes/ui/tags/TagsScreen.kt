@@ -1,4 +1,4 @@
-package io.github.marievial2.smartnotes.ui.notes
+package io.github.marievial2.smartnotes.ui.tags
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -9,15 +9,11 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 
 @Composable
-fun NotesScreen(
-    navController: NavHostController
-) {
-
+fun TagsScreen(navController : NavHostController) {
     Box(
-        modifier = Modifier.fillMaxSize(),
+        modifier=Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
-
     ) {
-        Text(text = "Bienvenue sur SmartNotes")
+        Text ("Tags")
     }
 }
