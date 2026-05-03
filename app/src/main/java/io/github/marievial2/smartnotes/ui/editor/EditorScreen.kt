@@ -10,13 +10,13 @@ import androidx.navigation.NavHostController
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AddArticleScreen(
+fun EditorScreen(
     navController: NavHostController
 ) {
 
     Scaffold(
 
     ) {
-        Text(text = "Ajouter un article")
+        Text(text = "Editer un article")
     }
 }

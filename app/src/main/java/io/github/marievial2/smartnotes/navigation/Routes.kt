@@ -5,7 +5,7 @@ object Routes {
     const val ADD = "add"
     const val DETAIL = "detail/{id}"
 
-    fun detailRoute(id: Int): String {
+    fun detailRoute(id: String): String {
         return "detail/$id"
     }
 }
