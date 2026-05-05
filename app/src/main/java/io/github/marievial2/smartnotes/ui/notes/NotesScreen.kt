@@ -18,6 +18,6 @@ fun NotesScreen(
         contentAlignment = Alignment.Center
 
     ) {
-        Text(text = "Bienvenue sur SmartNotes")
+        Text(text = "Notes")
     }
 }

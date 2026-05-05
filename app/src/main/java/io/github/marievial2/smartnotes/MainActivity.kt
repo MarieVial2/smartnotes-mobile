@@ -36,7 +36,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             SmartNotesTheme {
 
-                    SmartNotesAppRoot(
+                    MainScreen(
                     )
 
             }
@@ -45,11 +45,15 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-private fun SmartNotesAppRoot() {
+private fun MainScreen() {
     val navController = rememberNavController()
+    //on utilise le state pour "abonner" et donc avertir quand la pile change : réactivité
     val backStackEntry by navController.currentBackStackEntryAsState()
+    //On le permet à null pour quand NavHost n'a pas encore poussé la premiere desti sur la pile
     val currentRoute = backStackEntry?.destination?.route
 
+
+//Un bool à utiliser pour savoir si on affiche la boottomBar
     val showBottomBar = currentRoute in listOf(
         Routes.NOTES,
         Routes.CATEGORIES,
@@ -67,6 +71,8 @@ private fun SmartNotesAppRoot() {
         Box(modifier = Modifier.padding(innerPadding)) {
             AppNavGraph(navController)
         }
+
+
     }
 }
 
@@ -77,6 +83,8 @@ private data class TabItem(
     val icon: ImageVector
 )
 
+
+//Code généré par l'IA à étudier
 @Composable
 private fun AppBottomBar(
     navController: NavHostController,
