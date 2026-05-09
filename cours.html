@@ -155,6 +155,86 @@
             }
         }
 
+        .concept {
+            border-bottom: 1px dashed var(--accent);
+            cursor: help;
+            transition: background .12s;
+        }
+
+        .concept:hover {
+            background: var(--accent-light);
+            border-radius: 2px;
+        }
+
+        code .concept {
+            border-bottom-color: var(--accent);
+        }
+
+        .concept-tooltip {
+            position: absolute;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: .9rem 1.1rem;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, .15);
+            z-index: 200;
+            width: 340px;
+            max-width: calc(100vw - 40px);
+            font-size: .85rem;
+            line-height: 1.45;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity .15s;
+        }
+
+        .concept-tooltip.visible {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .concept-tooltip h4 {
+            margin: 0 0 .6rem 0;
+            font-size: .78rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: .05em;
+            padding-bottom: .4rem;
+            border-bottom: 1px solid var(--accent-light);
+        }
+
+        .concept-tooltip h4 strong {
+            color: var(--accent);
+            text-transform: none;
+            font-size: .95rem;
+            letter-spacing: 0;
+            display: block;
+            margin-top: .15rem;
+        }
+
+        .concept-tooltip ul {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .concept-tooltip li {
+            margin: .15rem 0;
+        }
+
+        .concept-tooltip a {
+            color: var(--text);
+            text-decoration: none;
+            display: block;
+            padding: .35rem .5rem;
+            border-radius: 4px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+
+        .concept-tooltip a:hover {
+            background: var(--accent-light);
+            color: var(--accent);
+        }
+
         header.page-header {
             border-bottom: 3px solid var(--accent);
             padding-bottom: 1rem;
@@ -2369,6 +2449,306 @@ nombres.map { x -&gt; x * 2 }</code></pre>
 
         window.addEventListener('scroll', onScroll, { passive: true });
         onScroll();
+    })();
+
+    // ──────────────────────────────────────────────────────────────────
+    // Cross-références : bulles "voir aussi" au survol des notions clés.
+    // Pour ajouter une notion : ajouter une entrée dans CONCEPTS.
+    //   - patterns : regex appliquées aux text nodes du contenu
+    //   - refs     : liens vers toutes les sections qui abordent la notion
+    // ──────────────────────────────────────────────────────────────────
+    (function () {
+        const CONCEPTS = {
+            lambda: {
+                label: 'Lambda Kotlin',
+                patterns: [/\blambdas?\b/gi],
+                refs: [
+                    { title: "Cours dédié — Qu'est-ce qu'une lambda", href: '#lambdas-kotlin' },
+                    { title: "Graphie { params -> corps } décortiquée", href: '#lambda-graphie' },
+                    { title: "Passer du comportement en argument", href: '#lambda-comportement' },
+                    { title: "Le trailing lambda — sucre syntaxique", href: '#lambda-trailing' },
+                    { title: "Application — la lambda { innerPadding -> … }", href: '#lambda-innerpadding' },
+                    { title: "Slot Compose = lambda passé en paramètre", href: '#slot-lambda' },
+                    { title: "Le trailing lambda en Kotlin (résumé 3.5)", href: '#trailing-lambda' },
+                    { title: "Anatomie d'un appel composable", href: '#composable-syntax' }
+                ]
+            },
+            slot: {
+                label: 'Slot Compose',
+                patterns: [/\bslots?\b/gi],
+                refs: [
+                    { title: "Slot Compose = lambda passé en paramètre", href: '#slot-lambda' },
+                    { title: "Anatomie d'un appel composable", href: '#composable-syntax' },
+                    { title: "Passer du comportement en argument", href: '#lambda-comportement' }
+                ]
+            },
+            scaffold: {
+                label: 'Scaffold (Material 3)',
+                patterns: [/\bScaffold\b/g],
+                refs: [
+                    { title: "Le Scaffold parent et innerPadding", href: '#scaffold-parent' },
+                    { title: "Scaffold parent vs scaffold par écran", href: '#scaffold-parent-vs-screen' },
+                    { title: "innerPadding et le Box wrapper", href: '#inner-padding' },
+                    { title: "Application lambda — Scaffold de MainScreen", href: '#lambda-innerpadding' }
+                ]
+            },
+            navController: {
+                label: 'navController / NavController',
+                patterns: [/\bnavController\b/g, /\bNavController\b/g],
+                refs: [
+                    { title: "Le rôle du navController", href: '#nav-controller' },
+                    { title: "Pourquoi passer le navController aux écrans", href: '#navcontroller-param' },
+                    { title: "remember et rememberNavController()", href: '#remember' },
+                    { title: "3 niveaux de la navigation : Routes / NavGraph / navController", href: '#nav-trois-niveaux' },
+                    { title: "NavController = télécommande, NavHost = téléviseur", href: '#navhost-vs-navcontroller' }
+                ]
+            },
+            modifier: {
+                label: 'Modifier (Compose)',
+                patterns: [/\bModifier\b/g],
+                refs: [
+                    { title: "Le Modifier : équivalent CSS de Compose", href: '#modifier' }
+                ]
+            },
+            composable: {
+                label: '@Composable / composable',
+                patterns: [/\bcomposables?\b/gi],
+                refs: [
+                    { title: "L'annotation @Composable", href: '#composable-annotation' },
+                    { title: "Anatomie d'un appel composable", href: '#composable-syntax' }
+                ]
+            },
+            trailingLambda: {
+                label: 'Trailing lambda',
+                patterns: [/\btrailing lambdas?\b/gi],
+                refs: [
+                    { title: "Le trailing lambda — sucre syntaxique", href: '#lambda-trailing' },
+                    { title: "Le trailing lambda en Kotlin (résumé 3.5)", href: '#trailing-lambda' },
+                    { title: "Anatomie d'un appel composable", href: '#composable-syntax' }
+                ]
+            },
+            innerPadding: {
+                label: 'innerPadding (PaddingValues)',
+                patterns: [/\binnerPadding\b/g],
+                refs: [
+                    { title: "innerPadding et le Box wrapper", href: '#inner-padding' },
+                    { title: "Application — la lambda { innerPadding -> … }", href: '#lambda-innerpadding' },
+                    { title: "Le Scaffold parent et innerPadding", href: '#scaffold-parent' }
+                ]
+            },
+            appContainer: {
+                label: 'AppContainer',
+                patterns: [/\bAppContainer\b/g],
+                refs: [
+                    { title: "À quoi sert AppContainer ?", href: '#appcontainer' },
+                    { title: "Rappel : AppContainer — où il est, à quoi il sert", href: '#appcontainer-revisited' },
+                    { title: "Pourquoi un dossier di/ ?", href: '#di-folder' }
+                ]
+            },
+            remember: {
+                label: 'remember / rememberNavController',
+                patterns: [/\brememberNavController\b/g, /\bremember\b/g],
+                refs: [
+                    { title: "remember et rememberNavController() : survivre aux recompositions", href: '#remember' },
+                    { title: "currentBackStackEntryAsState() : observer la route courante", href: '#current-route' }
+                ]
+            },
+            singleton: {
+                label: 'Singleton',
+                patterns: [/\bsingletons?\b/gi],
+                refs: [
+                    { title: "Qu'est-ce qu'un singleton ?", href: '#singleton' },
+                    { title: "Pourquoi un dossier di/ ?", href: '#di-folder' },
+                    { title: "À quoi sert AppContainer ?", href: '#appcontainer' }
+                ]
+            },
+            state: {
+                label: 'State<T> Compose',
+                patterns: [/\bState<T>/g, /\bState\.value\b/g],
+                refs: [
+                    { title: "State<T> : le journal abonnable de Compose", href: '#state-journal' },
+                    { title: "currentBackStackEntryAsState() : observer la route courante", href: '#current-route' },
+                    { title: "remember et rememberNavController()", href: '#remember' }
+                ]
+            },
+            stateDelegate: {
+                label: 'Delegate by',
+                patterns: [/\bdelegate\b/gi],
+                refs: [
+                    { title: "Le delegate by : sucre syntaxique sur State.value", href: '#by-delegate' },
+                    { title: "State<T> : le journal abonnable de Compose", href: '#state-journal' }
+                ]
+            },
+            componentActivity: {
+                label: 'ComponentActivity / Activity',
+                patterns: [/\bComponentActivity\b/g],
+                refs: [
+                    { title: "Pont Android ↔ Compose : ComponentActivity, onCreate, setContent", href: '#component-activity' },
+                    { title: "Qu'est-ce qu'une Activity ?", href: '#activity' }
+                ]
+            },
+            recomposition: {
+                label: 'Recomposition Compose',
+                patterns: [/\brecomposition\b/gi, /\brecompositions\b/gi],
+                refs: [
+                    { title: "remember et rememberNavController() : survivre aux recompositions", href: '#remember' },
+                    { title: "Scaffold parent vs scaffold par écran", href: '#scaffold-parent-vs-screen' }
+                ]
+            },
+            bottomBar: {
+                label: 'Bottom navigation / NavigationBar',
+                patterns: [/\bbottom bar\b/gi, /\bbottom nav\b/gi, /\bNavigationBar\b/g, /\bAppBottomBar\b/g],
+                refs: [
+                    { title: "NavigationBar Material 3 et le pattern bottom nav officiel", href: '#bottom-nav-pattern' },
+                    { title: "Le piège du stub TODO créé par Android Studio", href: '#stub-trap' },
+                    { title: "Material Icons en Compose", href: '#material-icons' }
+                ]
+            }
+        };
+
+        // ─── Auto-wrap : parcourt le contenu et entoure les occurrences ───
+        function shouldSkip(el) {
+            while (el && el !== document.body) {
+                if (el.tagName === 'A' || el.tagName === 'PRE' || el.tagName === 'H1' || el.tagName === 'H2') return true;
+                if (el.classList && el.classList.contains('concept')) return true;
+                if (el.classList && el.classList.contains('sidebar-toc')) return true;
+                if (el.classList && el.classList.contains('session-header')) return true;
+                if (el.classList && el.classList.contains('toc')) return true;
+                el = el.parentElement;
+            }
+            return false;
+        }
+
+        function wrapMatches(textNode, pattern, conceptKey) {
+            const text = textNode.nodeValue;
+            pattern.lastIndex = 0;
+            if (!pattern.test(text)) return;
+
+            pattern.lastIndex = 0;
+            const frag = document.createDocumentFragment();
+            let lastIndex = 0;
+            let m;
+            while ((m = pattern.exec(text)) !== null) {
+                if (m.index > lastIndex) {
+                    frag.appendChild(document.createTextNode(text.slice(lastIndex, m.index)));
+                }
+                const span = document.createElement('span');
+                span.className = 'concept';
+                span.dataset.concept = conceptKey;
+                span.textContent = m[0];
+                frag.appendChild(span);
+                lastIndex = m.index + m[0].length;
+                if (m[0].length === 0) pattern.lastIndex++;
+            }
+            if (lastIndex < text.length) {
+                frag.appendChild(document.createTextNode(text.slice(lastIndex)));
+            }
+            textNode.parentNode.replaceChild(frag, textNode);
+        }
+
+        function autoWrap() {
+            const root = document.querySelector('.container');
+            if (!root) return;
+
+            for (const [key, def] of Object.entries(CONCEPTS)) {
+                for (const pattern of def.patterns) {
+                    const walker = document.createTreeWalker(
+                        root,
+                        NodeFilter.SHOW_TEXT,
+                        {
+                            acceptNode(node) {
+                                if (!node.nodeValue.trim()) return NodeFilter.FILTER_REJECT;
+                                if (shouldSkip(node.parentElement)) return NodeFilter.FILTER_REJECT;
+                                return NodeFilter.FILTER_ACCEPT;
+                            }
+                        }
+                    );
+                    const targets = [];
+                    let n;
+                    while ((n = walker.nextNode())) targets.push(n);
+                    for (const t of targets) wrapMatches(t, pattern, key);
+                }
+            }
+        }
+
+        // ─── Tooltip (bulle "voir aussi") ───
+        const tooltip = document.createElement('div');
+        tooltip.className = 'concept-tooltip';
+        document.body.appendChild(tooltip);
+
+        let hideTimer = null;
+        let currentSpan = null;
+
+        function showTooltip(span) {
+            const key = span.dataset.concept;
+            const def = CONCEPTS[key];
+            if (!def) return;
+            currentSpan = span;
+
+            const items = def.refs.map(r => `<li><a href="${r.href}">${r.title}</a></li>`).join('');
+            tooltip.innerHTML = `<h4>Voir aussi <strong>${def.label}</strong></h4><ul>${items}</ul>`;
+
+            // Positionnement
+            const rect = span.getBoundingClientRect();
+            const tooltipWidth = 340;
+            const margin = 12;
+
+            let left = rect.left + window.scrollX;
+            const overflow = (left + tooltipWidth) - (window.scrollX + window.innerWidth - margin);
+            if (overflow > 0) left -= overflow;
+            if (left < margin + window.scrollX) left = margin + window.scrollX;
+
+            let top = rect.bottom + window.scrollY + 8;
+            // Si peu de place en bas, afficher au-dessus
+            if (rect.bottom + 200 > window.innerHeight) {
+                top = rect.top + window.scrollY - tooltip.offsetHeight - 8;
+                if (top < window.scrollY + margin) top = rect.bottom + window.scrollY + 8;
+            }
+
+            tooltip.style.left = left + 'px';
+            tooltip.style.top = top + 'px';
+            tooltip.classList.add('visible');
+        }
+
+        function hideTooltip() {
+            tooltip.classList.remove('visible');
+            currentSpan = null;
+        }
+
+        function scheduleHide() {
+            clearTimeout(hideTimer);
+            hideTimer = setTimeout(hideTooltip, 180);
+        }
+
+        function cancelHide() {
+            clearTimeout(hideTimer);
+        }
+
+        document.addEventListener('mouseover', (e) => {
+            const span = e.target.closest('.concept');
+            if (span) {
+                cancelHide();
+                if (span !== currentSpan) showTooltip(span);
+            }
+        });
+
+        document.addEventListener('mouseout', (e) => {
+            const span = e.target.closest('.concept');
+            if (!span) return;
+            const to = e.relatedTarget;
+            if (to && (to.closest && (to.closest('.concept') === span || to.closest('.concept-tooltip')))) return;
+            scheduleHide();
+        });
+
+        tooltip.addEventListener('mouseenter', cancelHide);
+        tooltip.addEventListener('mouseleave', scheduleHide);
+
+        // Init après load pour ne pas perturber l'ancrage initial
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', autoWrap);
+        } else {
+            autoWrap();
+        }
     })();
 </script>
 
