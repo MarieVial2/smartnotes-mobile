@@ -375,6 +375,15 @@
                     <li><a href="#composable-syntax">Anatomie d'un appel composable : parenthèses et accolades</a></li>
                 </ul>
             </li>
+            <li><a href="#session-2026-05-09">2026-05-09 — Lambdas Kotlin</a>
+                <ul>
+                    <li><a href="#lambdas-kotlin">Qu'est-ce qu'une lambda ? Graphie et rôle</a></li>
+                    <li><a href="#lambda-graphie">La graphie <code>{ params -&gt; corps }</code> décortiquée</a></li>
+                    <li><a href="#lambda-comportement">Pourquoi : passer du comportement en argument</a></li>
+                    <li><a href="#lambda-trailing">Le trailing lambda — sucre syntaxique</a></li>
+                    <li><a href="#lambda-innerpadding">Application : la lambda <code>{ innerPadding -&gt; … }</code> du Scaffold</a></li>
+                </ul>
+            </li>
         </ul>
 </nav>
 
@@ -2093,8 +2102,236 @@ Box(content = { Text("dans le box") })</code></pre>
             </div>
 
             <blockquote class="note">
-                <p><strong>À la prochaine session</strong> : on reprendra cette syntaxe en parallèle du <a href="#lambdas-kotlin">cours dédié sur les lambdas Kotlin</a> (à venir) — les slots, callbacks et trailing lambdas seront alors complètement démystifiés.</p>
+                <p><strong>Suite</strong> : la session suivante (<a href="#session-2026-05-09">2026-05-09</a>) reprend cette syntaxe en parallèle du <a href="#lambdas-kotlin">cours dédié sur les lambdas Kotlin</a> — slots, callbacks et trailing lambdas y sont démystifiés.</p>
             </blockquote>
+        </article>
+
+    </section>
+
+    <section class="session" id="session-2026-05-09">
+        <div class="session-header">
+            <h2>Lambdas Kotlin <span class="date">— 2026-05-09</span></h2>
+        </div>
+
+        <article class="entry" id="lambdas-kotlin">
+            <h3>Qu'est-ce qu'une lambda ? Graphie et rôle</h3>
+
+            <p class="question">« J'aimerais comprendre ce que c'est, pourquoi cette graphie et ce que ça fait. »</p>
+
+            <p><strong>Définition</strong> : <em>une lambda, c'est une fonction sans nom.</em> C'est exactement ça, pas plus mystérieux. Pour le voir, voici la même idée écrite deux fois :</p>
+
+            <pre><code>// Forme 1 : fonction nommée
+fun doubler(x: Int): Int {
+    return x * 2
+}
+
+// Forme 2 : lambda (= la même chose, sans nom)
+{ x: Int -&gt; x * 2 }</code></pre>
+
+            <p>Les deux représentent le <strong>même comportement</strong> (« prends un entier, renvoie son double »). La seule différence, c'est que la première a un nom (<code>doubler</code>) et qu'on peut l'appeler plus tard ailleurs ; la seconde est anonyme et s'utilise <strong>en ligne</strong>, là où on l'écrit.</p>
+
+            <h4>Pourquoi vouloir une fonction sans nom ?</h4>
+            <p>Parce qu'on veut souvent <strong>utiliser une fonction une seule fois, sur place</strong>, sans la baptiser. C'est l'équivalent code d'un Post-it vs un livre relié : si tu n'utilises l'idée qu'une seule fois, pas la peine de la cataloguer dans un coin du fichier.</p>
+
+            <blockquote>
+                <p><strong>Parallèle JS</strong> : <code>(x) =&gt; x * 2</code> est une <em>arrow function</em>. C'est exactement la même chose qu'une lambda Kotlin. Même concept, syntaxe différente.</p>
+            </blockquote>
+        </article>
+
+        <article class="entry" id="lambda-graphie">
+            <h3>La graphie <code>{ params -&gt; corps }</code> décortiquée</h3>
+
+            <p>La graphie d'une lambda Kotlin se lit en trois morceaux :</p>
+
+            <pre><code>{           x          -&gt;          x * 2
+│           │           │             │
+│           │           │             └── corps : ce que la lambda exécute / renvoie
+│           │           │
+│           │           └── sépare paramètre(s) et corps (se lit "renvoie vers")
+│           │
+│           └── nom donné au paramètre que la lambda VA RECEVOIR
+│
+└── j'ouvre une fonction-sans-nom (pas un bloc d'instructions classique)</code></pre>
+
+            <p>Donc <code>{ x -&gt; x * 2 }</code> se lit, mot pour mot : <em>« une fonction qui prend <code>x</code> et renvoie <code>x * 2</code> »</em>.</p>
+
+            <h4>Cas particuliers de la graphie</h4>
+            <table>
+                <thead>
+                <tr><th>Cas</th><th>Graphie</th><th>Lecture</th></tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td>Aucun paramètre</td>
+                    <td><code>{ println("Hello") }</code></td>
+                    <td>Pas de <code>-&gt;</code> du tout. La lambda ne reçoit rien et fait juste son corps.</td>
+                </tr>
+                <tr>
+                    <td>Un seul paramètre</td>
+                    <td><code>{ it * 2 }</code></td>
+                    <td>Raccourci : on peut omettre le <code>x -&gt;</code> et utiliser le mot-clé implicite <code>it</code>.</td>
+                </tr>
+                <tr>
+                    <td>Plusieurs paramètres</td>
+                    <td><code>{ a, b -&gt; a + b }</code></td>
+                    <td>Liste de paramètres séparés par des virgules à gauche du <code>-&gt;</code>.</td>
+                </tr>
+                </tbody>
+            </table>
+
+            <p>C'est pour cette raison que dans Compose tu vois souvent <code>{ innerPadding -&gt; ... }</code> ou <code>{ tab -&gt; ... }</code> : ce sont juste des lambdas qui <strong>annoncent qu'elles vont recevoir un paramètre</strong> et lui donnent un nom local.</p>
+        </article>
+
+        <article class="entry" id="lambda-comportement">
+            <h3>Pourquoi : passer du comportement en argument</h3>
+
+            <p>Voici la <strong>vraie</strong> raison pour laquelle Kotlin a inventé ça. Avant les lambdas, on pouvait passer à une fonction des <strong>données</strong> (un nombre, une chaîne, une liste). Avec les lambdas, on peut aussi lui passer <strong>un comportement, une action, du code</strong>.</p>
+
+            <h4>Exemple parlant : <code>map</code> sur une liste</h4>
+            <pre><code>val nombres = listOf(1, 2, 3)
+val doubles = nombres.map { x -&gt; x * 2 }   // → [2, 4, 6]</code></pre>
+
+            <p>Que se passe-t-il ? La fonction <code>map</code> ne sait pas <em>à l'avance</em> ce qu'elle doit faire à chaque élément. C'est <strong>toi</strong> qui lui dis, en lui passant une lambda : <em>« pour chaque élément, fais ÇA »</em>. La même <code>map</code> peut servir à doubler, à mettre en majuscules, à formater des dates, à n'importe quoi — parce que le <strong>comportement</strong> est paramétrable.</p>
+
+            <blockquote>
+                <p><strong>Analogie</strong> : <code>map</code> est une <strong>machine à laver universelle</strong>. Pour qu'elle sache <em>quoi</em> faire à tes vêtements, tu lui glisses un <strong>programme</strong> (la lambda). Demain tu lui glisses un autre programme, elle fera autre chose. La machine ne change pas.</p>
+            </blockquote>
+
+            <h4>Lien direct avec Compose : les <strong>slots</strong></h4>
+            <p>C'est exactement le mécanisme des slots Compose (cf. article <a href="#slot-lambda">Slot Compose = lambda passé en paramètre</a>). Un <code>Scaffold</code> ne sait pas à l'avance <em>ce que</em> tu veux dans sa barre du bas. Donc tu lui passes une lambda qui, quand elle sera exécutée, dessinera ta <code>AppBottomBar</code> :</p>
+
+            <pre><code>Scaffold(
+    bottomBar = { AppBottomBar(navController, currentRoute) }
+)</code></pre>
+
+            <p><code>bottomBar</code> est un paramètre <strong>de type lambda</strong>. Tu lui donnes une fonction-sans-nom qui dit <em>« quand tu auras besoin de la barre du bas, exécute ce code »</em>. Le slot, c'est juste un paramètre lambda.</p>
+        </article>
+
+        <article class="entry" id="lambda-trailing">
+            <h3>Le trailing lambda — sucre syntaxique</h3>
+
+            <p>Kotlin a une règle de confort qu'il faut connaître par cœur :</p>
+
+            <blockquote>
+                <p><strong>Si le dernier argument d'une fonction est une lambda, on peut le sortir des parenthèses.</strong></p>
+            </blockquote>
+
+            <p>C'est purement esthétique. Ces deux écritures sont <strong>strictement équivalentes</strong> :</p>
+
+            <pre><code>// Forme stricte : la lambda est dans les parenthèses
+nombres.map({ x -&gt; x * 2 })
+
+// Forme avec trailing lambda : la lambda est sortie dehors
+nombres.map { x -&gt; x * 2 }</code></pre>
+
+            <p>Et si la lambda est <strong>le seul</strong> argument, on peut même supprimer les parenthèses vides. C'est pour ça que <code>nombres.map { it * 2 }</code> est si compact.</p>
+
+            <p>En Compose, c'est la <strong>convention universelle</strong> pour le contenu :</p>
+
+            <pre><code>Scaffold(
+    topBar = { ... },
+    bottomBar = { ... }
+) { innerPadding -&gt;
+    // ← le contenu, dernier argument, sorti dehors
+    NotesScreen(...)
+}</code></pre>
+
+            <p>Lu correctement : <code>Scaffold(topBar = ..., bottomBar = ..., content = { innerPadding -&gt; NotesScreen(...) })</code>. C'est juste plus joli avec le <code>content</code> sorti dehors.</p>
+        </article>
+
+        <article class="entry" id="lambda-innerpadding">
+            <h3>Application : la lambda <code>{ innerPadding -&gt; … }</code> du Scaffold</h3>
+
+            <p class="question">« Prends le code du Scaffold de mon MainScreen et explique-moi la lambda avec <code>innerPadding</code>. »</p>
+
+            <p>Voici le vrai bloc tel qu'il est dans <code>MainActivity.kt</code> :</p>
+
+            <pre><code>Scaffold(
+    modifier = Modifier.fillMaxSize(),
+    bottomBar = {
+        if (showBottomBar) {
+            AppBottomBar(navController, currentRoute)
+        }
+    }
+) { innerPadding -&gt;
+    Box(modifier = Modifier.padding(innerPadding)) {
+        AppNavGraph(navController)
+    }
+}</code></pre>
+
+            <h4>1. Repère d'abord les deux lambdas</h4>
+            <table>
+                <thead>
+                <tr><th>Lambda</th><th>Où</th><th>Rôle</th></tr>
+                </thead>
+                <tbody>
+                <tr><td><code>bottomBar = { … }</code></td><td>dans les parenthèses</td><td>« voici ce que tu dessineras dans le slot du bas »</td></tr>
+                <tr><td><code>{ innerPadding -&gt; … }</code></td><td><strong>après</strong> la parenthèse fermante</td><td>« voici ce que tu dessineras dans le slot du contenu » (= le slot principal)</td></tr>
+                </tbody>
+            </table>
+
+            <p>La deuxième est sortie dehors → <strong>trailing lambda</strong>. Au format strict, le code donnerait :</p>
+
+            <pre><code>Scaffold(
+    modifier = …,
+    bottomBar = { … },
+    content = { innerPadding -&gt; Box(...) { AppNavGraph(navController) } }
+)</code></pre>
+
+            <p>Le <code>content = …</code> est <strong>implicite</strong> quand on l'écrit en trailing.</p>
+
+            <h4>2. Décortique <code>{ innerPadding -&gt; … }</code></h4>
+            <ul>
+                <li><code>{</code> → j'ouvre une lambda.</li>
+                <li><code>innerPadding</code> → nom donné au paramètre que la lambda <strong>va recevoir</strong>.</li>
+                <li><code>-&gt;</code> → sépare paramètre et corps.</li>
+                <li><code>Box(modifier = Modifier.padding(innerPadding)) { ... }</code> → le corps : ce que la lambda exécute.</li>
+            </ul>
+
+            <p>Lecture mot pour mot : <em>« une fonction qui reçoit un truc qu'on appellera <code>innerPadding</code>, et qui dessine un <code>Box</code> paddé avec, contenant <code>AppNavGraph(navController)</code>. »</em></p>
+
+            <h4>3. Mais qui « passe » le <code>innerPadding</code> à la lambda ?</h4>
+            <p>C'est <strong><code>Scaffold</code> lui-même</strong>. Point clé à intégrer : quand on écrit <code>bottomBar = { AppBottomBar(...) }</code>, la lambda <strong>ne reçoit rien</strong> (pas de <code>paramètre -&gt;</code>). Quand on écrit <code>{ innerPadding -&gt; ... }</code>, on dit l'inverse : <em>« je te promets que tu recevras un paramètre, et je l'appellerai <code>innerPadding</code> »</em>.</p>
+
+            <p>Pourquoi cette promesse ? Parce que la signature du paramètre <code>content</code> du Scaffold ressemble à ça :</p>
+
+            <pre><code>content: @Composable (PaddingValues) -&gt; Unit</code></pre>
+
+            <p>Traduction : <em>« je veux une fonction <code>@Composable</code> qui prend un <code>PaddingValues</code> et ne renvoie rien »</em>. Donc Scaffold doit <strong>te donner</strong> un <code>PaddingValues</code> quand il appellera ta lambda. Toi, tu prévois une variable pour le recueillir → c'est le <code>innerPadding -&gt;</code>.</p>
+
+            <blockquote class="warning">
+                <p><strong>Le nom est libre.</strong> On pourrait écrire <code>{ pad -&gt; Box(modifier = Modifier.padding(pad)) { … } }</code> ou <code>{ trucMachin -&gt; ... }</code>. La convention est <code>innerPadding</code> parce que c'est explicite.</p>
+            </blockquote>
+
+            <h4>4. Qu'est-ce que c'est, ce <code>innerPadding</code>, concrètement ?</h4>
+            <p>C'est un <strong><code>PaddingValues</code></strong> : un objet qui contient quatre marges (haut, bas, gauche, droite), <strong>calculées par le Scaffold</strong> en fonction de :</p>
+            <ul>
+                <li>la hauteur de la barre du haut (s'il y en a une) ;</li>
+                <li>la hauteur de la barre du bas (la <code>AppBottomBar</code> quand <code>showBottomBar</code> est vrai) ;</li>
+                <li>les zones système (status bar, gesture bar du bas en edge-to-edge).</li>
+            </ul>
+
+            <p>Scaffold dit : <em>« j'ai réservé ces zones pour les barres et les insets. Si tu veux que ton contenu ne passe pas DESSOUS, applique ce padding à ton contenu. »</em> Et c'est exactement ce que fait <code>Box(modifier = Modifier.padding(innerPadding)) { AppNavGraph(navController) }</code>.</p>
+
+            <blockquote class="warning">
+                <p><strong>Si on oubliait le <code>padding(innerPadding)</code></strong> : le contenu (<code>AppNavGraph</code>) s'afficherait <strong>par-dessus</strong> la <code>AppBottomBar</code>. Les boutons de la nav seraient à moitié cachés. C'est la raison d'être de cette mécanique.</p>
+            </blockquote>
+
+            <h4>5. Le déroulé en runtime — pour bien sceller le concept</h4>
+            <ol>
+                <li>Compose appelle <code>Scaffold(modifier = …, bottomBar = …, content = …)</code>.</li>
+                <li>Scaffold mesure la place disponible, dessine sa <code>bottomBar</code>, calcule le <code>PaddingValues</code> restant pour le contenu.</li>
+                <li>Il <strong>appelle</strong> la lambda <code>content</code> en lui passant ce <code>PaddingValues</code> : c'est l'instant où <code>innerPadding</code> reçoit une vraie valeur.</li>
+                <li>La lambda exécute <code>Box(modifier = Modifier.padding(innerPadding)) { AppNavGraph(navController) }</code>.</li>
+                <li>→ <code>AppNavGraph</code> est dessiné dans la zone restante.</li>
+            </ol>
+
+            <p>On n'écrit jamais cet appel soi-même. Scaffold le fait en coulisses. C'est <strong>la raison d'être de la lambda</strong> : permettre à Scaffold de t'<em>injecter</em> une valeur (<code>innerPadding</code>) au moment où il en aura besoin.</p>
+
+            <div class="recap">
+                <p><strong>En une phrase :</strong> le <code>innerPadding -&gt;</code> n'est <strong>pas</strong> une variable que toi tu remplis. C'est <strong>un trou que tu prévois pour que Scaffold t'envoie quelque chose</strong>. La lambda dit : <em>« quand tu m'appelleras, tu me donneras un <code>PaddingValues</code>, et je l'appellerai <code>innerPadding</code> »</em>. Tu fais ensuite ce que tu veux avec — ici, tu l'appliques en padding sur un <code>Box</code> pour que le contenu respecte la zone de la <code>bottomBar</code>.</p>
+                <p>Même mécanique que <code>nombres.map { x -&gt; x * 2 }</code> : <code>map</code> te passe chaque élément, tu le récupères dans <code>x</code>, tu fais ton calcul. Sauf qu'ici, le « truc passé » est un <code>PaddingValues</code>, et le « calcul » est de dessiner ton arborescence Compose.</p>
+            </div>
         </article>
 
     </section>
