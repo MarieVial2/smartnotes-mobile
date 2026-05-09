@@ -1,0 +1,2139 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Cours SmartNotes — Marie</title>
+    <style>
+        :root {
+            --bg: #fafaf7;
+            --bg-card: #ffffff;
+            --text: #1f2328;
+            --text-muted: #57606a;
+            --accent: #6750a4;
+            --accent-light: #eaddff;
+            --border: #d0d7de;
+            --code-bg: #f6f8fa;
+            --warning-bg: #fff8c5;
+            --warning-border: #d4a72c;
+            --analogy-bg: #ddf4ff;
+            --analogy-border: #54aeff;
+        }
+
+        * { box-sizing: border-box; }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.65;
+            margin: 0;
+            padding: 0;
+            padding-left: 300px;
+        }
+
+        .container {
+            max-width: 860px;
+            margin: 0 auto;
+            padding: 2rem 1.5rem 4rem;
+        }
+
+        .sidebar-toc {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 300px;
+            height: 100vh;
+            overflow-y: auto;
+            background: var(--bg-card);
+            border-right: 1px solid var(--border);
+            padding: 1.5rem 1.2rem 2rem;
+            font-size: .85rem;
+            z-index: 50;
+        }
+
+        .sidebar-toc h2 {
+            margin: 0 0 1rem 0;
+            font-size: .9rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: .05em;
+            padding-bottom: .6rem;
+            border-bottom: 2px solid var(--accent-light);
+        }
+
+        .sidebar-toc ul {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .sidebar-toc ul ul {
+            padding-left: .7rem;
+            margin: .3rem 0 .6rem;
+            border-left: 2px solid var(--accent-light);
+        }
+
+        .sidebar-toc li { margin: .15rem 0; }
+
+        .sidebar-toc a {
+            color: var(--text);
+            text-decoration: none;
+            display: block;
+            padding: .3rem .5rem;
+            border-radius: 4px;
+            line-height: 1.35;
+            transition: background .15s, color .15s;
+        }
+
+        .sidebar-toc > ul > li > a {
+            color: var(--accent);
+            font-weight: 600;
+            margin-top: .8rem;
+        }
+
+        .sidebar-toc a code {
+            background: transparent;
+            padding: 0;
+            font-size: .9em;
+        }
+
+        .sidebar-toc a:hover {
+            background: var(--accent-light);
+            color: var(--accent);
+        }
+
+        .sidebar-toc a.active {
+            background: var(--accent-light);
+            color: var(--accent);
+            font-weight: 600;
+        }
+
+        .back-to-top {
+            position: fixed;
+            bottom: 1.5rem;
+            right: 1.5rem;
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: var(--accent);
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            font-size: 1.4rem;
+            line-height: 1;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, .25);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity .2s, transform .15s, background .15s;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+        }
+
+        .back-to-top.visible {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .back-to-top:hover {
+            background: #543b9c;
+            transform: translateY(-2px);
+        }
+
+        @media (max-width: 1024px) {
+            body { padding-left: 0; }
+            .sidebar-toc {
+                position: static;
+                width: auto;
+                height: auto;
+                border-right: none;
+                border-bottom: 1px solid var(--border);
+            }
+        }
+
+        header.page-header {
+            border-bottom: 3px solid var(--accent);
+            padding-bottom: 1rem;
+            margin-bottom: 2.5rem;
+        }
+
+        header.page-header h1 {
+            margin: 0 0 .3rem 0;
+            font-size: 2.2rem;
+            color: var(--accent);
+        }
+
+        header.page-header p {
+            margin: 0;
+            color: var(--text-muted);
+            font-style: italic;
+        }
+
+        .session {
+            margin-bottom: 4rem;
+        }
+
+        .session-header {
+            background: var(--accent-light);
+            padding: .8rem 1.2rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+        }
+
+        .session-header h2 {
+            margin: 0;
+            color: var(--accent);
+            font-size: 1.5rem;
+        }
+
+        .session-header .date {
+            font-size: .9rem;
+            color: var(--text-muted);
+            font-weight: normal;
+        }
+
+        article.entry {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1.5rem 2rem;
+            margin-bottom: 1.5rem;
+        }
+
+        article.entry h3 {
+            margin-top: 0;
+            color: var(--accent);
+            border-bottom: 2px solid var(--accent-light);
+            padding-bottom: .4rem;
+        }
+
+        article.entry h4 {
+            color: var(--text);
+            margin-top: 1.8rem;
+        }
+
+        p { margin: .8rem 0; }
+
+        code {
+            background: var(--code-bg);
+            padding: .15em .4em;
+            border-radius: 4px;
+            font-family: "JetBrains Mono", "Consolas", monospace;
+            font-size: .92em;
+        }
+
+        pre {
+            background: var(--code-bg);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 1rem;
+            overflow-x: auto;
+        }
+
+        pre code {
+            background: transparent;
+            padding: 0;
+            font-size: .88em;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 1rem 0;
+        }
+
+        th, td {
+            border: 1px solid var(--border);
+            padding: .55rem .8rem;
+            text-align: left;
+            vertical-align: top;
+        }
+
+        th {
+            background: var(--accent-light);
+            color: var(--accent);
+        }
+
+        tr:nth-child(even) td {
+            background: var(--code-bg);
+        }
+
+        blockquote {
+            border-left: 4px solid var(--analogy-border);
+            background: var(--analogy-bg);
+            margin: 1rem 0;
+            padding: .8rem 1.2rem;
+            border-radius: 0 6px 6px 0;
+        }
+
+        blockquote.warning {
+            border-left-color: var(--warning-border);
+            background: var(--warning-bg);
+        }
+
+        blockquote p:first-child { margin-top: 0; }
+        blockquote p:last-child { margin-bottom: 0; }
+
+        .question {
+            font-style: italic;
+            color: var(--text-muted);
+            border-left: 3px solid var(--accent);
+            padding-left: 1rem;
+            margin: 1.5rem 0;
+        }
+
+        ul, ol { padding-left: 1.5rem; }
+        li { margin: .35rem 0; }
+
+        .recap {
+            background: var(--accent-light);
+            border-radius: 6px;
+            padding: 1rem 1.2rem;
+            margin-top: 1.5rem;
+        }
+
+        .recap strong { color: var(--accent); }
+
+        footer {
+            text-align: center;
+            color: var(--text-muted);
+            font-size: .85rem;
+            margin-top: 4rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border);
+        }
+    </style>
+</head>
+<body>
+
+<nav class="sidebar-toc" aria-label="Sommaire">
+    <h2>Sommaire</h2>
+        <ul>
+            <li><a href="#session-etape-1">2026-05-02 (étape 1) — Réorganisation de l'arborescence</a>
+                <ul>
+                    <li><a href="#feature-vs-type">Organiser par feature, pas par type technique</a></li>
+                    <li><a href="#sortie-theme-screens">Pourquoi sortir les écrans de <code>ui/theme/screens/</code></a></li>
+                    <li><a href="#notes-screen-file">Le fichier <code>NotesScreen.kt</code></a></li>
+                    <li><a href="#editor-screen-file">Le fichier <code>EditorScreen.kt</code></a></li>
+                    <li><a href="#nav-controller">Le rôle du <code>navController</code></a></li>
+                </ul>
+            </li>
+            <li><a href="#session-2026-05-02">2026-05-02 (étape 2) — Bases Android : Application, AppContainer, Context, Activity</a>
+                <ul>
+                    <li><a href="#singleton">Qu'est-ce qu'un singleton ?</a></li>
+                    <li><a href="#di-folder">Pourquoi un dossier <code>di/</code> ?</a></li>
+                    <li><a href="#init-oncreate">Qu'est-ce qu'une <code>init</code> / un <code>onCreate</code> ?</a></li>
+                    <li><a href="#appcontainer">À quoi sert <code>AppContainer</code> ?</a></li>
+                    <li><a href="#smartnotesapp">À quoi sert <code>SmartNotesApp</code> ?</a></li>
+                    <li><a href="#activity">Qu'est-ce qu'une <code>Activity</code> ?</a></li>
+                    <li><a href="#context">Qu'est-ce qu'un <code>Context</code> ?</a></li>
+                    <li><a href="#context-types">Les deux types de <code>Context</code></a></li>
+                </ul>
+            </li>
+            <li><a href="#session-etape-3">2026-05-03 (étape 3) — Bottom navigation : routes, placeholders, écrans Compose</a>
+                <ul>
+                    <li><a href="#object-routes">L'objet <code>Routes</code> : pourquoi centraliser les routes</a></li>
+                    <li><a href="#route-placeholder">Les placeholders <code>{xxx}</code> dans une route</a></li>
+                    <li><a href="#route-helper">Le helper <code>editorEdit(noteId)</code> : gabarit vs URL réelle</a></li>
+                    <li><a href="#composable-annotation">L'annotation <code>@Composable</code></a></li>
+                    <li><a href="#box-center">Centrer un contenu : <code>Box</code> + <code>Alignment.Center</code></a></li>
+                    <li><a href="#navcontroller-param">Pourquoi passer le <code>navController</code> aux écrans</a></li>
+                    <li><a href="#modifier">Le <code>Modifier</code> : équivalent CSS de Compose</a></li>
+                    <li><a href="#alignment-casing"><code>Alignment</code> vs <code>contentAlignment</code> &amp; conventions de casse Kotlin</a></li>
+                    <li><a href="#nav-trois-niveaux">Les 3 niveaux de la navigation : <code>Routes</code> / <code>NavGraph</code> / <code>navController</code></a></li>
+                    <li><a href="#remember"><code>remember</code> et <code>rememberNavController()</code> : survivre aux recompositions</a></li>
+                    <li><a href="#current-route"><code>currentBackStackEntryAsState()</code> : observer la route courante</a></li>
+                    <li><a href="#scaffold-parent">Le <code>Scaffold</code> parent et <code>innerPadding</code></a></li>
+                    <li><a href="#bottom-nav-pattern"><code>NavigationBar</code> Material 3 et le pattern bottom nav officiel</a></li>
+                    <li><a href="#material-icons">Material Icons en Compose : core vs extended</a></li>
+                    <li><a href="#stub-trap">Le piège du stub <code>TODO</code> créé par Android Studio</a></li>
+                </ul>
+            </li>
+            <li><a href="#session-debrief-mainactivity">2026-05-05 (debrief étape 3.5) — Relecture pas à pas de <code>MainActivity.kt</code></a>
+                <ul>
+                    <li><a href="#mainscreen-renaming">Renommage <code>SmartNotesAppRoot</code> → <code>MainScreen</code></a></li>
+                    <li><a href="#component-activity">Pont Android ↔ Compose : <code>ComponentActivity</code>, <code>onCreate</code>, <code>setContent</code></a></li>
+                    <li><a href="#nav-stack">La pile de navigation : analogie de la pile d'assiettes</a></li>
+                    <li><a href="#navhost-vs-navcontroller">NavController = télécommande, NavHost = téléviseur</a></li>
+                    <li><a href="#nav-back-stack-entry">Qu'est-ce qu'un <code>NavBackStackEntry</code> ? Pourquoi nullable ?</a></li>
+                    <li><a href="#state-journal"><code>State&lt;T&gt;</code> : le journal abonnable de Compose</a></li>
+                    <li><a href="#by-delegate">Le delegate <code>by</code> : sucre syntaxique sur <code>State.value</code></a></li>
+                    <li><a href="#appcontainer-revisited">Rappel : <code>AppContainer</code> — où il est, à quoi il sert</a></li>
+                    <li><a href="#whitelist-vs-blacklist">Whitelist vs blacklist : pourquoi <code>showBottomBar</code> liste les routes autorisées</a></li>
+                    <li><a href="#slot-lambda">Slot Compose = lambda passé en paramètre</a></li>
+                    <li><a href="#trailing-lambda">Le trailing lambda en Kotlin</a></li>
+                    <li><a href="#inner-padding"><code>innerPadding</code> et le <code>Box</code> wrapper</a></li>
+                    <li><a href="#scaffold-parent-vs-screen">Scaffold parent vs scaffold par écran</a></li>
+                </ul>
+            </li>
+            <li><a href="#session-2026-05-08">2026-05-08 — Syntaxe d'un composable</a>
+                <ul>
+                    <li><a href="#composable-syntax">Anatomie d'un appel composable : parenthèses et accolades</a></li>
+                </ul>
+            </li>
+        </ul>
+</nav>
+
+<div class="container">
+
+    <header class="page-header" id="top">
+        <h1>Cours SmartNotes</h1>
+        <p>Cahier de cours — concepts vus en sessions avec Claude. Marie Vial.</p>
+    </header>
+
+    <section class="session" id="session-etape-1">
+        <div class="session-header">
+            <h2>Étape 1 — Réorganisation de l'arborescence <span class="date">— 2026-05-02</span></h2>
+        </div>
+
+        <article class="entry" id="feature-vs-type">
+            <h3>Organiser par feature, pas par type technique</h3>
+
+            <p class="question">« Pourquoi devais-je créer un package <code>notes</code> et un package <code>editor</code> ? »</p>
+
+            <p>Quand on commence un projet, il y a deux façons d'organiser ses fichiers :</p>
+
+            <h4>Organisation par type technique <em>(à éviter pour les apps modernes)</em></h4>
+            <pre><code>ui/
+├── screens/       ← tous les écrans en vrac
+├── viewmodels/    ← tous les ViewModels en vrac
+└── components/    ← tous les composants en vrac</code></pre>
+
+            <h4>Organisation par feature <em>(ce qu'on a fait)</em></h4>
+            <pre><code>ui/
+├── notes/         ← TOUT ce qui touche à la liste de notes
+│   ├── NotesScreen.kt
+│   └── (à venir) NotesViewModel.kt, NoteCard.kt, ...
+├── editor/        ← TOUT ce qui touche à l'éditeur de note
+│   ├── EditorScreen.kt
+│   └── (à venir) EditorViewModel.kt, TranscriptionState.kt, ...
+└── theme/         ← le thème visuel (couleurs, typo)</code></pre>
+
+            <h4>Pourquoi c'est mieux ?</h4>
+            <ol>
+                <li><strong>Cohésion</strong> : quand tu travailles sur la feature « notes », tu ouvres un seul dossier et <strong>tout est là</strong>. Tu n'as pas à sauter entre <code>screens/</code>, <code>viewmodels/</code>, <code>components/</code>. Les fichiers qui changent ensemble vivent ensemble.</li>
+                <li><strong>Découplage visible</strong> : si <code>ui/editor/</code> importe quelque chose de <code>ui/notes/</code>, c'est un signe louche → ces deux features devraient être indépendantes. Le fait de les voir dans des dossiers séparés rend cette règle évidente.</li>
+                <li><strong>Scalabilité</strong> : à 30 écrans, un dossier <code>screens/</code> plat devient illisible. Avec une organisation par feature, chaque dossier reste petit et focalisé.</li>
+                <li><strong>C'est ce que Google recommande</strong> dans ses docs officielles d'architecture Android (<em>Guide to app architecture</em>).</li>
+            </ol>
+        </article>
+
+        <article class="entry" id="sortie-theme-screens">
+            <h3>Pourquoi sortir les écrans de <code>ui/theme/screens/</code></h3>
+
+            <p>Le squelette de départ avait <code>ui/theme/screens/</code> — c'est-à-dire que les écrans étaient <strong>dans le sous-package du thème</strong>. Or :</p>
+
+            <ul>
+                <li>Le <strong>thème</strong> (<code>ui/theme/</code>) = les couleurs, la typographie, le mode sombre. Du visuel pur, partagé par toute l'app.</li>
+                <li>Les <strong>écrans</strong> = des features fonctionnelles (afficher des notes, éditer une note).</li>
+            </ul>
+
+            <p>Mettre les écrans dans <code>theme/</code>, c'est dire « les écrans dépendent du thème ». <strong>Faux</strong> : c'est l'inverse, les écrans <strong>utilisent</strong> le thème (via <code>MaterialTheme.colorScheme</code>), mais ils n'en sont pas une sous-partie. C'était une erreur d'organisation du squelette à corriger.</p>
+        </article>
+
+        <article class="entry" id="notes-screen-file">
+            <h3>Le fichier <code>NotesScreen.kt</code></h3>
+
+            <p class="question">« À quoi servent les fichiers que j'ai mis dedans ? »</p>
+
+            <p><strong>Rôle</strong> : afficher la <strong>liste des notes</strong> de l'utilisateur. C'est l'écran d'accueil de l'app (premier onglet de la bottom nav future).</p>
+
+            <p><strong>État actuel</strong> : juste un <code>Scaffold</code> qui affiche « Bienvenue sur SmartNotes ». C'est un <strong>placeholder</strong> — il sera enrichi à l'étape 9 (LazyColumn de cards avec titre/date/aperçu).</p>
+
+            <h4>Anatomie du code actuel</h4>
+            <pre><code>@Composable
+fun NotesScreen(navController: NavHostController) {
+    Scaffold {
+        Text(text = "Bienvenue sur SmartNotes")
+    }
+}</code></pre>
+
+            <table>
+                <thead>
+                <tr><th>Élément</th><th>Explication</th></tr>
+                </thead>
+                <tbody>
+                <tr><td><code>@Composable</code></td><td>Annotation qui dit « cette fonction décrit une UI Compose ». Sans elle, tu ne peux pas l'appeler depuis un autre composable.</td></tr>
+                <tr><td><code>Scaffold</code></td><td>Composant Material 3 qui donne la structure standard d'un écran : barre du haut, contenu, FAB, barre du bas. Pour l'instant on n'utilise pas ces slots, on met juste du texte au centre.</td></tr>
+                <tr><td><code>navController: NavHostController</code></td><td>Le « GPS » de l'app. C'est lui qui sait dans quel écran on est et qui permet de dire « va à l'écran Editor ». On le passera quand on cliquera sur une note ou sur le FAB « + ».</td></tr>
+                </tbody>
+            </table>
+        </article>
+
+        <article class="entry" id="editor-screen-file">
+            <h3>Le fichier <code>EditorScreen.kt</code></h3>
+
+            <p><strong>Rôle</strong> : afficher <strong>l'éditeur de note</strong> (création + édition). C'est l'écran qui s'ouvre quand tu cliques sur « + » ou sur une note existante.</p>
+
+            <p><strong>État actuel</strong> : pareil, placeholder avec « Ajouter un article ». Sera enrichi à l'étape 10 (champ titre + champ contenu + bouton enregistrer).</p>
+
+            <p>Même anatomie que <code>NotesScreen</code> — <code>@Composable</code> + <code>Scaffold</code> + texte. C'est juste un autre écran indépendant, dans son propre package <code>ui/editor/</code> pour bien le séparer de la feature « notes ».</p>
+        </article>
+
+        <article class="entry" id="nav-controller">
+            <h3>Le rôle du <code>navController</code></h3>
+
+            <p>C'est la pièce qui relie les deux écrans. Imagine <code>navController</code> comme <strong>une télécommande</strong> que les écrans se passent. Quand <code>NotesScreen</code> veut t'envoyer dans l'éditeur, il fait :</p>
+
+            <pre><code>navController.navigate(Routes.ADD)</code></pre>
+
+            <p>→ Android cherche dans le <code>NavGraph</code> quel composable correspond à <code>Routes.ADD</code>, et l'affiche. Tu reverras tout ça à l'étape 3 quand on branchera vraiment la navigation (avec en plus la bottom nav et les 3 onglets).</p>
+
+            <div class="recap">
+                <p><strong>Récap de l'étape 1 :</strong></p>
+                <ul>
+                    <li>On a sorti les écrans de <code>ui/theme/screens/</code> (mauvais endroit, ils ne dépendent pas du thème).</li>
+                    <li>On a créé <strong>un package par feature</strong> : <code>ui/notes/</code> et <code>ui/editor/</code>.</li>
+                    <li>Chaque package contient l'écran principal de la feature, et plus tard ses ViewModels et composants spécifiques.</li>
+                    <li>Les écrans communiquent via le <code>navController</code> et les routes définies dans <code>navigation/Routes.kt</code>.</li>
+                </ul>
+            </div>
+        </article>
+
+    </section>
+
+    <section class="session" id="session-2026-05-02">
+        <div class="session-header">
+            <h2>Étape 2 — Application + AppContainer <span class="date">— 2026-05-02</span></h2>
+        </div>
+
+        <article class="entry" id="singleton">
+            <h3>Qu'est-ce qu'un singleton ?</h3>
+
+            <p class="question">« C'est quoi un singleton ? »</p>
+
+            <p><strong>Définition</strong> : un singleton est un objet dont il n'existe <strong>qu'une seule instance</strong> pendant toute la durée de vie du programme. Tout le monde qui le demande reçoit la <strong>même</strong> instance.</p>
+
+            <h4>Pourquoi c'est utile ?</h4>
+            <p>Imagine ta DB Room. Ouvrir une connexion à la base, c'est coûteux (allocation mémoire, chargement du schéma, etc.). Si chaque écran de ton app créait sa propre instance de <code>SmartNotesDatabase</code>, tu aurais 5 connexions ouvertes en parallèle, plus une fuite mémoire à chaque navigation. <strong>Une seule DB partagée par toute l'app = une seule connexion, un seul cache, un seul état cohérent.</strong></p>
+
+            <h4>Comment on en fait un en Kotlin ?</h4>
+            <table>
+                <thead>
+                <tr><th>Forme</th><th>Usage typique</th></tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td><code>object MonObjet { ... }</code></td>
+                    <td>Singleton « pur » du langage. Initialisé au premier accès. Pas de paramètres, pas de Context.</td>
+                </tr>
+                <tr>
+                    <td>Une classe instanciée <strong>une seule fois</strong> dans <code>Application.onCreate()</code></td>
+                    <td>Quand tu as besoin d'un <code>Context</code> ou de paramètres au constructeur. <strong>C'est notre cas avec <code>AppContainer</code>.</strong></td>
+                </tr>
+                <tr>
+                    <td><code>companion object { val instance by lazy { ... } }</code></td>
+                    <td>Quand tu veux un accès « global » via <code>MaClasse.instance</code>. Plus rare.</td>
+                </tr>
+                </tbody>
+            </table>
+
+            <p>Dans notre projet, <code>AppContainer</code> n'est pas un <code>object</code> Kotlin parce qu'il a besoin d'un <code>Context</code> à la construction. On en garantit l'unicité <strong>par discipline</strong> : on ne le crée qu'à un seul endroit (dans <code>SmartNotesApp.onCreate()</code>), et tout le monde le lit depuis là.</p>
+
+            <blockquote>
+                <p><strong>Parallèle JS</strong> : c'est comme exporter <code>export const db = createDb()</code> dans un module — comme JS ne charge le module qu'une fois, tu obtiens un singleton de fait.</p>
+            </blockquote>
+        </article>
+
+        <article class="entry" id="di-folder">
+            <h3>Pourquoi un dossier <code>di/</code> ?</h3>
+
+            <p class="question">« Pourquoi appeler le dossier <code>di</code> ? »</p>
+
+            <p><code>di</code> = abréviation standard pour <strong>Dependency Injection</strong> (injection de dépendances).</p>
+
+            <h4>C'est quoi DI ?</h4>
+            <p>C'est un pattern où, au lieu qu'une classe <strong>crée elle-même</strong> les objets dont elle a besoin, on les lui <strong>donne de l'extérieur</strong>.</p>
+
+            <p>Exemple <strong>sans</strong> DI :</p>
+            <pre><code>class NotesViewModel {
+    private val repo = NoteRepository(SmartNotesDatabase.create(...))
+    // le ViewModel décide tout seul comment construire son repo
+}</code></pre>
+
+            <p>Avec DI :</p>
+            <pre><code>class NotesViewModel(private val repo: NoteRepository) {
+    // le ViewModel reçoit son repo, il ne sait pas comment il a été construit
+}</code></pre>
+
+            <h4>Pourquoi c'est mieux ?</h4>
+            <ul>
+                <li><strong>Testabilité</strong> : en test, tu peux injecter un repo bidon (fake) sans toucher la DB.</li>
+                <li><strong>Découplage</strong> : le ViewModel ne dépend plus de la DB ni de Room directement, juste de l'interface du repo.</li>
+                <li><strong>Lifecycle</strong> : un seul repo partagé entre tous les ViewModels, au lieu de N copies.</li>
+            </ul>
+
+            <p>L'<code>AppContainer</code> est l'endroit où on construit toutes ces dépendances <strong>une seule fois</strong>, et où on les expose. C'est notre « boîte à outils centrale ». Donc le mettre dans un dossier <code>di/</code> est une convention claire pour les futurs lecteurs (toi-même dans 6 mois) : <em>« ah, tout ce qui touche à l'assemblage des dépendances est ici »</em>.</p>
+
+            <blockquote class="warning">
+                <p>Si tu trouves le nom obscur, tu pourrais l'appeler <code>container/</code> ou <code>core/</code>. Mais <code>di/</code> est la convention Android la plus répandue — autant prendre l'habitude.</p>
+            </blockquote>
+        </article>
+
+        <article class="entry" id="init-oncreate">
+            <h3>Qu'est-ce qu'une <code>init</code> / un <code>onCreate</code> ?</h3>
+
+            <p class="question">« C'est quoi une init ? »</p>
+
+            <p>« Initialiser » un objet = <strong>lui donner sa valeur de départ</strong>. Quand tu écris <code>var x: Int = 5</code>, tu <strong>initialises</strong> <code>x</code> à 5. Sans cette init, <code>x</code> n'a pas de valeur et tu ne peux pas l'utiliser.</p>
+
+            <p>Pour les classes, il y a deux moments d'init possibles :</p>
+            <ol>
+                <li><strong>À la construction</strong> : quand tu écris <code>val container = AppContainer(context)</code>, le constructeur tourne et l'objet est prêt.</li>
+                <li><strong>Plus tard, dans une méthode <code>onCreate()</code></strong> : c'est ce qu'on fait pour <code>SmartNotesApp.container</code>. Pourquoi pas à la construction ? Parce qu'au moment où Android construit <code>SmartNotesApp</code>, le <code>applicationContext</code> n'est <strong>pas encore</strong> disponible — Android nous le passe juste avant d'appeler <code>onCreate()</code>. Donc on ne peut pas initialiser <code>container</code> plus tôt.</li>
+            </ol>
+
+            <p>D'où le <code>lateinit var</code> : c'est la promesse Kotlin <em>« je te jure que je l'initialiserai avant qu'on s'en serve, laisse-moi juste le déclarer maintenant sans valeur »</em>. Si tu oublies l'init et que quelqu'un essaie de lire <code>container</code>, l'app crashe avec un message clair <code>lateinit property container has not been initialized</code>.</p>
+        </article>
+
+        <article class="entry" id="appcontainer">
+            <h3>À quoi sert <code>AppContainer</code> ?</h3>
+
+            <p class="question">« À quoi sert le fichier AppContainer ? »</p>
+
+            <blockquote>
+                <p><strong>L'image générale</strong> : ton app est un restaurant. La DB Room = le frigo. Le client Gemini = la ligne téléphonique vers l'IA. Tu veux <strong>un seul exemplaire</strong> de chaque pour tout le restaurant. <code>AppContainer</code> est <strong>la boîte à outils centrale</strong> qui contient ces objets partagés.</p>
+            </blockquote>
+
+            <p>Pour l'instant, <strong>la boîte est vide</strong>. C'est ça qui peut perturber : « à quoi sert un fichier vide ? »</p>
+
+            <p>Réponse : on pose <strong>la boîte</strong> maintenant pour pouvoir y mettre des outils plus tard sans tout casser. Aux étapes suivantes, on va y ajouter :</p>
+
+            <ul>
+                <li>étape 6 : <code>val database = SmartNotesDatabase.create(context)</code> ← le frigo</li>
+                <li>étape 7 : <code>val noteRepository = NoteRepository(database.noteDao())</code> ← l'employé qui sait quoi faire avec le frigo</li>
+                <li>étape 23 : <code>val geminiClient = GeminiClient(apiKey)</code> ← la ligne téléphonique vers l'IA</li>
+            </ul>
+
+            <p>À chaque ajout, n'importe quel écran de l'app pourra faire :</p>
+            <pre><code>val app = LocalContext.current.applicationContext as SmartNotesApp
+val notes = app.container.noteRepository.getAllNotes()</code></pre>
+
+            <p>Traduction : <em>« Hé bâtiment, donne-moi ta boîte à outils, et passe-moi l'employé du frigo. »</em></p>
+
+            <h4>Pourquoi le faire maintenant si c'est vide ?</h4>
+            <p>Parce que c'est <strong>plus simple</strong> d'ajouter une étagère dans une boîte qui existe déjà que de tout réorganiser plus tard. Si on attendait l'étape 6 pour créer <code>SmartNotesApp</code> + <code>AppContainer</code> en même temps que Room, tu aurais 4 nouveaux concepts à digérer d'un coup. Là on isole la plomberie maintenant, on la teste (l'app se lance ? oui), et aux étapes suivantes on aura juste à <strong>remplir</strong> la boîte.</p>
+
+            <h4>Le code de la classe (étape 2)</h4>
+            <pre><code>package io.github.marievial2.smartnotes.di
+
+import android.content.Context
+
+class AppContainer(private val context: Context) {
+    // Pour l'instant vide.
+    // Aux étapes 6+ : database, noteRepository, etc.
+}</code></pre>
+
+            <table>
+                <thead>
+                <tr><th>Ligne</th><th>Explication</th></tr>
+                </thead>
+                <tbody>
+                <tr><td><code>package ...</code></td><td>Dit à Kotlin « ce fichier appartient au package <code>di</code> ». Doit correspondre au chemin du dossier.</td></tr>
+                <tr><td><code>import android.content.Context</code></td><td>On va utiliser le type <code>Context</code> du SDK Android. Sans cet import, Kotlin ne sait pas ce qu'est <code>Context</code>.</td></tr>
+                <tr><td><code>class AppContainer(...)</code></td><td>Déclare une classe nommée <code>AppContainer</code>.</td></tr>
+                <tr><td><code>(private val context: Context)</code></td><td>Le constructeur prend un <code>Context</code>. <code>val</code> = le transforme en propriété de la classe. <code>private</code> = personne d'extérieur ne peut le lire.</td></tr>
+                </tbody>
+            </table>
+        </article>
+
+        <article class="entry" id="smartnotesapp">
+            <h3>À quoi sert <code>SmartNotesApp</code> ?</h3>
+
+            <p class="question">« À quoi sert le fichier SmartNotesApp ? »</p>
+
+            <p><code>SmartNotesApp</code> est <strong>le bâtiment du restaurant</strong>. Android le construit <strong>avant</strong> d'ouvrir la première Activity, et il existe tant que ton app tourne.</p>
+
+            <p>C'est la classe que tu déclares dans le manifest avec <code>android:name=".SmartNotesApp"</code>. Sans cette ligne dans le manifest, Android ne sait même pas que ta classe existe et utilise un bâtiment générique vide à la place.</p>
+
+            <p>Concrètement, dans son <code>onCreate()</code> (= « moment où le bâtiment ouvre ses portes »), elle fait <strong>une seule chose</strong> : créer le <code>AppContainer</code>.</p>
+
+            <h4>Le code de la classe (étape 2)</h4>
+            <pre><code>package io.github.marievial2.smartnotes
+
+import android.app.Application
+import io.github.marievial2.smartnotes.di.AppContainer
+
+class SmartNotesApp : Application() {
+
+    lateinit var container: AppContainer
+        private set
+
+    override fun onCreate() {
+        super.onCreate()
+        container = AppContainer(applicationContext)
+    }
+}</code></pre>
+
+            <table>
+                <thead>
+                <tr><th>Ligne</th><th>Explication</th></tr>
+                </thead>
+                <tbody>
+                <tr><td><code>class SmartNotesApp : Application()</code></td><td>Hérite de <code>Application</code>. Le <code>: Application()</code> = « hérite et appelle le constructeur sans argument ». Équivalent du <code>extends</code> Java.</td></tr>
+                <tr><td><code>lateinit var container: AppContainer</code></td><td><code>lateinit</code> = « je promets de l'initialiser avant qu'on l'utilise, laisse-moi la déclarer sans valeur ». <code>var</code> obligatoire avec <code>lateinit</code>.</td></tr>
+                <tr><td><code>private set</code></td><td>Tout le monde peut <strong>lire</strong> <code>container</code>, mais seul <code>SmartNotesApp</code> peut l'<strong>écrire</strong>. Empêche un code extérieur de casser le singleton.</td></tr>
+                <tr><td><code>override fun onCreate()</code></td><td>Redéfinit la méthode héritée. Android l'appelle automatiquement, <strong>une seule fois</strong>, juste avant la première Activity.</td></tr>
+                <tr><td><code>super.onCreate()</code></td><td>Appel à la classe-mère. <strong>Obligatoire</strong>. Sans ça, Android crashe au lancement.</td></tr>
+                <tr><td><code>container = AppContainer(applicationContext)</code></td><td>On crée le container en lui passant <code>applicationContext</code>. <code>applicationContext</code> est dispo gratuitement parce que <code>SmartNotesApp</code> <strong>est</strong> un <code>Context</code>.</td></tr>
+                </tbody>
+            </table>
+
+            <h4>Modif du <code>AndroidManifest.xml</code></h4>
+            <p>Il faut ajouter <code>android:name=".SmartNotesApp"</code> sur la balise <code>&lt;application&gt;</code>. Le <code>.</code> au début est un raccourci « préfixe avec le namespace du module ».</p>
+            <pre><code>&lt;application
+    android:name=".SmartNotesApp"
+    android:allowBackup="true"
+    ...&gt;</code></pre>
+        </article>
+
+        <article class="entry" id="activity">
+            <h3>Qu'est-ce qu'une <code>Activity</code> ?</h3>
+
+            <p class="question">« C'est quoi une activity ? »</p>
+
+            <p>Une <code>Activity</code> = <strong>un écran de ton app</strong>. Point.</p>
+
+            <p>Quand tu utilises une app sur ton téléphone, ce que tu vois à un instant T, c'est une Activity. Quand tu touches « Voir le détail » et qu'un nouvel écran s'ouvre, c'est une <strong>autre</strong> Activity (ou alors la même Activity qui change de contenu — c'est notre cas avec Compose).</p>
+
+            <h4>Exemples concrets</h4>
+            <ul>
+                <li>WhatsApp : la liste des conversations = 1 Activity. Tu cliques sur une conv → la conversation ouverte = 1 autre Activity.</li>
+                <li>Une app météo : l'écran principal = 1 Activity. L'écran « Réglages » = 1 autre Activity.</li>
+                <li>SmartNotes : pour l'instant on n'a <strong>qu'une seule Activity</strong>, <code>MainActivity</code>. C'est elle qui contient toute l'app. À l'intérieur, c'est Compose qui change ce qui est affiché (les « écrans » Compose ≠ Activities Android).</li>
+            </ul>
+
+            <h4>Pourquoi c'est important ?</h4>
+            <p>Une Activity a une <strong>vie courte et imprévisible</strong> :</p>
+            <ul>
+                <li>Tu tournes ton téléphone en mode paysage → Android <strong>détruit</strong> l'Activity et la <strong>recrée</strong> (vrai !).</li>
+                <li>L'utilisateur appuie sur retour → l'Activity est détruite.</li>
+                <li>Une autre app prend le focus (un appel arrive) → l'Activity est mise en pause, peut-être détruite.</li>
+            </ul>
+
+            <p>Donc tu ne peux <strong>rien stocker de permanent</strong> dans une Activity. Ce qui est dedans peut disparaître à tout moment.</p>
+
+            <blockquote>
+                <p><strong>Analogie web</strong> : une Activity, c'est comme une <strong>page HTML</strong> dans le navigateur. Tu changes de page → l'ancienne est détruite, ses variables JS partent en fumée. Pareil ici.</p>
+            </blockquote>
+        </article>
+
+        <article class="entry" id="context">
+            <h3>Qu'est-ce qu'un <code>Context</code> ?</h3>
+
+            <p class="question">« C'est quoi un contexte ? »</p>
+
+            <p>Un <code>Context</code> est <strong>un objet qui te donne accès à Android lui-même</strong> (le système d'exploitation).</p>
+
+            <p>Quand tu codes en JS pour le web, tu as <code>window</code>, <code>document</code>, <code>navigator</code> qui te donnent accès au navigateur. Sur Android, <strong>tout passe par un <code>Context</code></strong>.</p>
+
+            <h4>Exemples de ce qu'on fait avec un <code>Context</code></h4>
+            <ul>
+                <li>Lire un texte traduit : <code>context.getString(R.string.app_name)</code> ← demande au système la version dans la langue de l'utilisateur.</li>
+                <li>Ouvrir un fichier privé à l'app : <code>context.openFileInput("notes.json")</code> ← le système te donne le chemin où ton app a le droit d'écrire.</li>
+                <li>Ouvrir la base Room : <code>Room.databaseBuilder(context, ...)</code> ← Room a besoin de savoir où poser le fichier <code>.db</code>.</li>
+                <li>Lancer un autre écran : <code>context.startActivity(intent)</code>.</li>
+                <li>Obtenir un service système : <code>context.getSystemService(Context.CONNECTIVITY_SERVICE)</code> ← pour vérifier la connexion internet.</li>
+            </ul>
+
+            <p>Sans <code>Context</code>, tu ne peux <strong>rien faire</strong> d'Android-spécifique.</p>
+
+            <blockquote>
+                <p><strong>Image</strong> : vois ça comme <strong>ton badge d'employé</strong>. Sans badge, tu ne peux rien faire dans le bâtiment. Avec, tu accèdes aux portes que ton rôle autorise.</p>
+            </blockquote>
+        </article>
+
+        <article class="entry" id="context-types">
+            <h3>Les deux types de <code>Context</code></h3>
+
+            <p class="question">« C'est quoi un contexte d'activity ? »</p>
+
+            <p>Il existe plusieurs sortes de <code>Context</code>, mais en pratique, deux qui comptent :</p>
+
+            <h4><code>applicationContext</code> — le badge « global »</h4>
+            <ul>
+                <li><strong>Qui le fournit</strong> : la classe <code>Application</code> (donc notre <code>SmartNotesApp</code>).</li>
+                <li><strong>Durée de vie</strong> : tant que ton app tourne. Ne meurt jamais avant la fermeture de l'app.</li>
+                <li><strong>Quand l'utiliser</strong> : pour tout ce qui doit <strong>survivre à la rotation d'écran</strong> ou aux changements d'écran. Singletons, base de données, clients réseau.</li>
+            </ul>
+
+            <h4>Le <code>Context</code> d'une <code>Activity</code> — le badge « écran courant »</h4>
+            <ul>
+                <li><strong>Qui le fournit</strong> : une <code>Activity</code> (chaque Activity <strong>est</strong> un <code>Context</code> par héritage).</li>
+                <li><strong>Durée de vie</strong> : courte. Détruit à la rotation, au retour arrière, etc.</li>
+                <li><strong>Quand l'utiliser</strong> : pour tout ce qui est <strong>lié à l'écran courant</strong> : afficher une <code>AlertDialog</code>, un <code>Toast</code>, démarrer une autre Activity.</li>
+            </ul>
+
+            <h4>Pourquoi cette distinction est CRITIQUE</h4>
+            <p>Code-piège (<strong>à ne PAS faire</strong>) :</p>
+            <pre><code>class AppContainer(context: Context) {
+    val database = Room.databaseBuilder(context, ...).build()
+}
+
+// Dans ton Activity :
+val container = AppContainer(this)  // ← "this" = l'Activity, donc Context d'Activity ❌</code></pre>
+
+            <p>L'utilisateur tourne son téléphone → Android veut <strong>détruire</strong> l'Activity pour la recréer. Mais il <strong>ne peut pas</strong> : ton <code>AppContainer</code> (singleton qui vit pour toujours) tient encore une <strong>référence</strong> vers cette Activity. La mémoire de l'Activity ne peut pas être libérée. C'est ce qu'on appelle une <strong>fuite mémoire</strong> (memory leak). Tournes 50 fois, tu as 50 Activities mortes en mémoire.</p>
+
+            <p><strong>Solution</strong> : passer <code>applicationContext</code> à la place. Lui, il vit pour toujours de toute façon, donc personne à libérer.</p>
+            <pre><code>val container = AppContainer(applicationContext)  // ✅ pas de fuite</code></pre>
+
+            <h4>La chaîne complète au démarrage de l'app</h4>
+            <ol>
+                <li>L'utilisateur lance l'app.</li>
+                <li>Android instancie <code>SmartNotesApp</code> (parce qu'on l'a déclaré dans le manifest).</li>
+                <li>Android appelle <code>SmartNotesApp.onCreate()</code>.</li>
+                <li>À l'intérieur, on appelle <code>AppContainer(applicationContext)</code>. On lui passe nous-mêmes (puisque <code>SmartNotesApp</code> <strong>est</strong> un <code>Context</code>).</li>
+                <li><code>AppContainer</code> stocke ce <code>Context</code> dans son champ <code>private val context</code>.</li>
+                <li>Plus tard (étape 6), Room en aura besoin pour créer son fichier de DB.</li>
+                <li>Android instancie <code>MainActivity</code> et lance le premier écran.</li>
+                <li>Tu touches l'écran, tu tournes le téléphone, peu importe : <code>MainActivity</code> peut être détruite et recréée 100 fois, le <code>AppContainer</code> et son <code>Context</code> ne bougent pas.</li>
+            </ol>
+
+            <div class="recap">
+                <p><strong>Récap en 3 phrases :</strong></p>
+                <ul>
+                    <li><strong>Activity</strong> = un écran de l'app, à durée de vie courte.</li>
+                    <li><strong>Context</strong> = badge d'accès à Android, indispensable pour tout faire d'Android-spécifique.</li>
+                    <li><strong><code>applicationContext</code></strong> = le badge global qui vit pour toujours, à utiliser pour les singletons. <strong>Le <code>Context</code> d'Activity</strong> = le badge de l'écran courant, à utiliser uniquement pour des trucs liés à l'écran.</li>
+                </ul>
+            </div>
+        </article>
+
+    </section>
+
+    <section class="session" id="session-etape-3">
+        <div class="session-header">
+            <h2>Étape 3 — Bottom navigation : routes, placeholders, écrans Compose <span class="date">— 2026-05-03</span></h2>
+        </div>
+
+        <article class="entry" id="object-routes">
+            <h3>L'objet <code>Routes</code> : pourquoi centraliser les routes</h3>
+
+            <p class="question">« Pourquoi un fichier <code>Routes.kt</code> avec un <code>object</code> au lieu de mettre les chaînes directement dans le code ? »</p>
+
+            <p>Une <strong>route</strong>, c'est l'identifiant stable d'une destination de l'app. Quand tu écris <code>navController.navigate("notes")</code>, la chaîne <code>"notes"</code> est <strong>la</strong> route de l'écran Notes.</p>
+
+            <h4>Le piège des chaînes en dur</h4>
+            <p>Si tu écris <code>"notes"</code> à 12 endroits différents dans le code, il suffit qu'à un endroit tu tapes <code>"note"</code> (sans <code>s</code>) :</p>
+            <ul>
+                <li>le compilateur Kotlin <strong>ne dit rien</strong> (c'est juste une chaîne valide),</li>
+                <li>l'app compile,</li>
+                <li>elle plante <strong>à l'exécution</strong> en disant « no destination found for route 'note' ».</li>
+            </ul>
+
+            <p>Avec une constante <code>Routes.NOTES = "notes"</code>, si tu tapes <code>Routes.NOTE</code> par erreur, le compilateur t'engueule <strong>tout de suite</strong> : « unresolved reference NOTE ». Tu corriges avant même de lancer l'app.</p>
+
+            <h4><code>object Routes</code> : un singleton léger</h4>
+            <p><code>object</code> en Kotlin = un singleton du langage. Pas de constructeur, pas de <code>Routes()</code>, on accède directement aux membres : <code>Routes.NOTES</code>. C'est l'équivalent d'une classe avec uniquement des membres <code>static</code> en Java. Idéal pour un sac de constantes thématiquement liées.</p>
+
+            <pre><code>object Routes {
+    const val NOTES = "notes"
+    const val CATEGORIES = "categories"
+    const val TAGS = "tags"
+    const val EDITOR_NEW = "editor/new"
+    const val EDITOR_EDIT = "editor/{noteId}"
+
+    fun editorEdit(noteId: String): String = "editor/$noteId"
+}</code></pre>
+
+            <table>
+                <thead>
+                <tr><th>Élément</th><th>Rôle</th></tr>
+                </thead>
+                <tbody>
+                <tr><td><code>const val</code></td><td>Constante évaluée à la compilation. Plus efficace que <code>val</code> simple, mais limité aux types primitifs et <code>String</code>.</td></tr>
+                <tr><td><code>NOTES</code>, <code>CATEGORIES</code>, <code>TAGS</code></td><td>Les 3 destinations de la bottom nav.</td></tr>
+                <tr><td><code>EDITOR_NEW</code></td><td>Ouvrir l'éditeur en mode création (pas d'ID).</td></tr>
+                <tr><td><code>EDITOR_EDIT</code></td><td>Gabarit pour ouvrir l'éditeur en mode édition (avec un ID dynamique).</td></tr>
+                </tbody>
+            </table>
+        </article>
+
+        <article class="entry" id="route-placeholder">
+            <h3>Les placeholders <code>{xxx}</code> dans une route</h3>
+
+            <p>Regarde la constante <code>EDITOR_EDIT = "editor/{noteId}"</code>. Le <code>{noteId}</code> est un <strong>paramètre de route</strong> — un trou dans l'URL que Compose Navigation va remplir avec une valeur réelle au moment de la navigation.</p>
+
+            <h4>Pourquoi un placeholder ?</h4>
+            <p>L'éditeur peut afficher <strong>n'importe quelle</strong> note. Tu n'as pas envie de déclarer une route par note (ce serait absurde — il y en aura des centaines). Une seule route avec un trou : <code>"editor/{noteId}"</code>. Côté Compose Navigation, à l'arrivée sur l'écran, on lit la valeur réelle :</p>
+
+            <pre><code>val noteId = backStackEntry.arguments?.getString("noteId")</code></pre>
+
+            <h4>La règle du nom à 3 endroits</h4>
+            <p>Le nom du placeholder (<code>noteId</code>) doit correspondre <strong>exactement</strong> entre :</p>
+            <ol>
+                <li>la constante de route (<code>"editor/{noteId}"</code>),</li>
+                <li>la déclaration côté <code>NavGraph</code> (à venir en 3.4),</li>
+                <li>le code qui lit la valeur (à venir en étape 11).</li>
+            </ol>
+
+            <p>Si tu écris <code>{noteId}</code> dans la route mais <code>arguments?.getString("note_id")</code> côté lecture, tu obtiendras <code>null</code> en silence. Pas d'erreur de compilation. Bug à l'exécution.</p>
+
+            <blockquote>
+                <p><strong>Analogie web</strong> : c'est comme un paramètre dynamique dans une URL Express ou React Router : <code>/users/:userId</code>. Même principe.</p>
+            </blockquote>
+        </article>
+
+        <article class="entry" id="route-helper">
+            <h3>Le helper <code>editorEdit(noteId)</code> : gabarit vs URL réelle</h3>
+
+            <p>Distinction essentielle :</p>
+
+            <table>
+                <thead>
+                <tr><th>Chaîne</th><th>Rôle</th></tr>
+                </thead>
+                <tbody>
+                <tr><td><code>"editor/{noteId}"</code></td><td><strong>Gabarit</strong> (template). On le déclare au <code>NavGraph</code> pour dire « il existe une destination de cette forme ».</td></tr>
+                <tr><td><code>"editor/abc-123"</code></td><td><strong>URL réelle</strong>. C'est ce qu'on passe à <code>navController.navigate(...)</code> quand on veut vraiment naviguer.</td></tr>
+                </tbody>
+            </table>
+
+            <p>La fonction helper fait juste la substitution :</p>
+
+            <pre><code>fun editorEdit(noteId: String): String = "editor/$noteId"</code></pre>
+
+            <p>Usage côté code (à venir étape 11) :</p>
+
+            <pre><code>navController.navigate(Routes.editorEdit("abc-123"))
+// → navigue vers "editor/abc-123"</code></pre>
+
+            <p><strong>Pourquoi <code>String</code> et pas <code>UUID</code> en paramètre ?</strong> Une URL est toujours du texte. La conversion <code>UUID ↔ String</code> se fait aux frontières (juste avant <code>navigate</code> et juste après <code>getString("noteId")</code>). Cohérent avec la correction faite à l'étape 1.</p>
+        </article>
+
+        <article class="entry" id="composable-annotation">
+            <h3>L'annotation <code>@Composable</code></h3>
+
+            <p class="question">« Pourquoi cette annotation au-dessus de chaque écran ? »</p>
+
+            <p>L'annotation <code>@Composable</code> dit au compilateur Kotlin : <strong>« cette fonction décrit de l'UI, pas un calcul classique »</strong>.</p>
+
+            <pre><code>@Composable
+fun CategoriesScreen(navController: NavHostController) { ... }</code></pre>
+
+            <h4>Conséquences</h4>
+            <ul>
+                <li>Une fonction <code>@Composable</code> ne peut être appelée que depuis une <strong>autre</strong> fonction <code>@Composable</code> (ou depuis <code>setContent { ... }</code> de l'<code>Activity</code>).</li>
+                <li>Elle peut être <strong>réexécutée plusieurs fois</strong> par le système Compose. C'est ce qu'on appelle la <strong>recomposition</strong> : quand une donnée affichée change, Compose ré-exécute la fonction pour produire la nouvelle UI.</li>
+                <li>Elle ne renvoie rien (<code>Unit</code>). Sa « sortie », c'est ce qu'elle <strong>déclare</strong> via les composables qu'elle appelle (<code>Text</code>, <code>Box</code>, etc.).</li>
+            </ul>
+
+            <p>Si tu oublies l'annotation, l'IDE crache : <em>« Functions which invoke @Composable functions must be marked with the @Composable annotation »</em>.</p>
+
+            <blockquote>
+                <p><strong>Mental model</strong> : pense une fonction <code>@Composable</code> comme une <strong>template d'UI déclarative</strong>, pas comme un calcul impératif. Tu décris « ce qui doit être à l'écran », pas « les étapes pour le dessiner ». Compose s'occupe du dessin et des mises à jour.</p>
+            </blockquote>
+        </article>
+
+        <article class="entry" id="box-center">
+            <h3>Centrer un contenu : <code>Box</code> + <code>Alignment.Center</code></h3>
+
+            <p>Le pattern idiomatique en Compose pour <strong>centrer un contenu</strong> dans tout l'espace disponible :</p>
+
+            <pre><code>Box(
+    modifier = Modifier.fillMaxSize(),
+    contentAlignment = Alignment.Center
+) {
+    Text("Catégories")
+}</code></pre>
+
+            <table>
+                <thead>
+                <tr><th>Élément</th><th>Rôle</th></tr>
+                </thead>
+                <tbody>
+                <tr><td><code>Box</code></td><td>Conteneur qui empile ses enfants les uns sur les autres. Équivalent Compose d'un <code>FrameLayout</code> Android.</td></tr>
+                <tr><td><code>Modifier.fillMaxSize()</code></td><td>« Occupe toute la place dispo ». Sans ça, le <code>Box</code> ferait juste la taille de son contenu (ici, le texte) et le centrage n'aurait aucun effet visible.</td></tr>
+                <tr><td><code>contentAlignment = Alignment.Center</code></td><td>Centre le contenu en 2D (horizontal + vertical) à l'intérieur du <code>Box</code>.</td></tr>
+                </tbody>
+            </table>
+
+            <h4>Variantes utiles à connaître</h4>
+            <ul>
+                <li><code>Alignment.TopCenter</code>, <code>Alignment.BottomEnd</code>, etc. — 9 alignements 2D possibles.</li>
+                <li>Si tu as <strong>plusieurs</strong> enfants et que chacun doit avoir son propre alignement : <code>Modifier.align(Alignment.X)</code> sur l'enfant directement.</li>
+                <li>Pour un layout vertical/horizontal classique, préfère <code>Column</code> / <code>Row</code> — ils ont leurs propres paramètres d'alignement (<code>verticalArrangement</code>, <code>horizontalAlignment</code>, etc.).</li>
+            </ul>
+        </article>
+
+        <article class="entry" id="navcontroller-param">
+            <h3>Pourquoi passer le <code>navController</code> aux écrans</h3>
+
+            <p class="question">« Pourquoi passer le <code>navController</code> aux écrans placeholder qui ne s'en servent pas ? »</p>
+
+            <p>Réponse honnête : <strong>aux placeholders d'aujourd'hui, on n'en a pas besoin</strong>. On le met quand même pour 3 raisons.</p>
+
+            <h4>1. Tous les écrans s'en serviront dans 2-3 phases</h4>
+            <table>
+                <thead>
+                <tr><th>Écran</th><th>Action</th><th>Cible</th></tr>
+                </thead>
+                <tbody>
+                <tr><td><code>NotesScreen</code></td><td>clic FAB « + »</td><td><code>Routes.EDITOR_NEW</code></td></tr>
+                <tr><td><code>NotesScreen</code></td><td>clic sur une note</td><td><code>Routes.editorEdit(noteId)</code></td></tr>
+                <tr><td><code>CategoriesScreen</code></td><td>clic sur une catégorie</td><td>écran « notes de cette catégorie »</td></tr>
+                <tr><td><code>TagsScreen</code></td><td>clic sur un tag</td><td>écran « notes de ce tag »</td></tr>
+                <tr><td><code>EditorScreen</code></td><td>retour / Enregistrer</td><td><code>popBackStack()</code></td></tr>
+                </tbody>
+            </table>
+
+            <p>Ajouter le paramètre maintenant évite de modifier la signature plus tard.</p>
+
+            <h4>2. Cohérence de signature entre les 4 écrans</h4>
+            <p>Les 4 écrans ont la même fonction conceptuelle (être une destination de la nav). Une signature uniforme <code>fun XScreen(navController: NavHostController)</code> rend le code prévisible et harmonise les appels côté <code>NavGraph</code> : <code>composable(Routes.XXX) { XScreen(navController) }</code> partout, à l'identique.</p>
+
+            <h4>3. C'est le pattern le plus simple pour débuter</h4>
+            <p>Il existe une approche <strong>plus propre</strong> pour les apps qui grossissent : passer des <strong>lambdas de navigation</strong> au lieu du <code>navController</code> :</p>
+
+            <pre><code>// Pattern alternatif "lambdas"
+@Composable
+fun NotesScreen(
+    onOpenEditor: (noteId: String) -> Unit,
+    onCreateNote: () -> Unit
+) { ... }</code></pre>
+
+            <p><strong>Avantages</strong> : <code>NotesScreen</code> ne dépend plus de Compose Navigation du tout. Il devient testable en isolation, réutilisable si on change de lib de nav, et la dépendance entre l'écran et l'extérieur est <strong>explicite</strong> (la signature dit ce que l'écran peut déclencher).</p>
+
+            <p><strong>Inconvénient pour Marie maintenant</strong> : apprendre les deux patterns en même temps, c'est trop. On commence simple. Refactor possible plus tard (Phase 5+) si les écrans deviennent gros et qu'on veut les tester — c'est mécanique : chercher <code>navController.navigate(X)</code> dans l'écran, le remplacer par un lambda passé en paramètre.</p>
+
+            <div class="recap">
+                <p><strong>Récap de l'étape 3 (sous-étapes 3.1 + 3.2) :</strong></p>
+                <ul>
+                    <li><code>Routes.kt</code> centralise toutes les destinations dans un <code>object</code> Kotlin (singleton léger), ce qui permet au compilateur de détecter les fautes de frappe.</li>
+                    <li>Les placeholders <code>{xxx}</code> dans une route représentent des paramètres dynamiques (ex: <code>{noteId}</code>). Le nom doit correspondre à 3 endroits.</li>
+                    <li>Une fonction <code>@Composable</code> décrit de l'UI déclarative, ré-exécutable par Compose lors des recompositions.</li>
+                    <li><code>Box</code> + <code>fillMaxSize</code> + <code>Alignment.Center</code> = pattern idiomatique pour centrer un contenu.</li>
+                    <li>On passe le <code>navController</code> à tous les écrans même quand ils ne s'en servent pas encore — cohérence + anticipation.</li>
+                </ul>
+            </div>
+        </article>
+
+        <article class="entry" id="modifier">
+            <h3>Le <code>Modifier</code> : équivalent CSS de Compose</h3>
+
+            <p class="question">« C'est quoi un <code>Modifier</code> ? »</p>
+
+            <p>Un <code>Modifier</code> est <strong>une chaîne d'instructions</strong> qu'on accroche à un composable pour lui dire <strong>comment se comporter</strong> : sa taille, ses marges, son fond, s'il est cliquable, s'il scroll, etc.</p>
+
+            <pre><code>Box(
+    modifier = Modifier
+        .fillMaxSize()         // 1. occupe toute la place
+        .padding(16.dp)        // 2. laisse 16dp de marge intérieure
+        .background(Color.Red) // 3. fond rouge
+)</code></pre>
+
+            <p>Chaque appel (<code>fillMaxSize()</code>, <code>padding(...)</code>, etc.) est un <strong>maillon</strong> de la chaîne. Le composable applique tout dans l'ordre.</p>
+
+            <h4>L'analogie web/CSS</h4>
+            <table>
+                <thead>
+                <tr><th>Compose</th><th>CSS équivalent</th></tr>
+                </thead>
+                <tbody>
+                <tr><td><code>Modifier.fillMaxSize()</code></td><td><code>width: 100%; height: 100%</code></td></tr>
+                <tr><td><code>Modifier.padding(16.dp)</code></td><td><code>padding: 16px</code></td></tr>
+                <tr><td><code>Modifier.background(Color.Red)</code></td><td><code>background-color: red</code></td></tr>
+                <tr><td><code>Modifier.clickable { ... }</code></td><td><code>onclick="..."</code> + <code>cursor: pointer</code></td></tr>
+                <tr><td><code>Modifier.size(100.dp)</code></td><td><code>width: 100px; height: 100px</code></td></tr>
+                </tbody>
+            </table>
+
+            <p><strong><code>Modifier</code> ≈ l'équivalent CSS+événements DOM</strong>, mais cousu directement dans le code Kotlin avec autocomplétion, type-checking, et impossibilité de te tromper de nom de propriété.</p>
+
+            <h4>Pourquoi pas des paramètres directs sur chaque composable ?</h4>
+            <p>Imagine si chaque composable avait 40 paramètres pour la taille, le padding, le fond, etc. Chaque nouveau composable maison devrait re-déclarer tout ça. Pas de réutilisation.</p>
+
+            <p>Avec <code>Modifier</code>, tu as <strong>un seul</strong> mécanisme universel partagé par tous les composables. Tu apprends 10-15 modifiers de base et tu peux les appliquer à n'importe quoi : <code>Box</code>, <code>Text</code>, <code>Column</code>, <code>Image</code>, ton propre composable maison… tout.</p>
+
+            <h4>L'ordre compte (subtil mais important)</h4>
+            <p>Les modifiers sont appliqués <strong>de gauche à droite</strong>. Tu peux obtenir des résultats différents selon l'ordre :</p>
+
+            <pre><code>// Padding PUIS background
+//   → marge à l'extérieur du fond (carré rouge plus petit avec de l'air autour)
+Modifier.padding(16.dp).background(Color.Red)
+
+// Background PUIS padding
+//   → fond plus grand, contenu décalé à l'intérieur
+Modifier.background(Color.Red).padding(16.dp)</code></pre>
+
+            <p><strong>Règle mentale</strong> : chaque modifier transforme la zone vue par le suivant.</p>
+
+            <h4>Les modifiers les plus courants</h4>
+            <table>
+                <thead>
+                <tr><th>Modifier</th><th>Effet</th></tr>
+                </thead>
+                <tbody>
+                <tr><td><code>fillMaxSize()</code>, <code>fillMaxWidth()</code>, <code>fillMaxHeight()</code></td><td>« occupe toute la place dispo » sur 1 ou 2 axes</td></tr>
+                <tr><td><code>size(W, H)</code> ou <code>size(100.dp)</code></td><td>taille fixe</td></tr>
+                <tr><td><code>padding(...)</code></td><td>marge intérieure</td></tr>
+                <tr><td><code>background(color)</code></td><td>fond coloré</td></tr>
+                <tr><td><code>clickable { ... }</code></td><td>rend cliquable + ripple visuel</td></tr>
+                <tr><td><code>align(Alignment.X)</code></td><td>dans <code>Box</code>/<code>Column</code>/<code>Row</code>, alignement individuel d'un enfant</td></tr>
+                <tr><td><code>weight(1f)</code></td><td>dans <code>Column</code>/<code>Row</code>, distribution proportionnelle de l'espace</td></tr>
+                <tr><td><code>verticalScroll(rememberScrollState())</code></td><td>rend le contenu scrollable verticalement</td></tr>
+                </tbody>
+            </table>
+
+            <p>Pas besoin de tous les retenir : Android Studio les propose en autocomplétion dès que tu tapes <code>Modifier.</code>.</p>
+
+            <h4>Convention « <code>modifier</code> en 1er paramètre optionnel »</h4>
+            <p>Tu remarqueras que <strong>tous les composables Compose</strong> ont un paramètre <code>modifier: Modifier = Modifier</code>. C'est une convention :</p>
+
+            <pre><code>@Composable
+fun MonComposable(
+    // 1. Paramètres obligatoires
+    text: String,
+    onClick: () -> Unit,
+
+    // 2. Le modifier en premier paramètre optionnel,
+    //    avec valeur par défaut Modifier (= chaîne vide)
+    modifier: Modifier = Modifier,
+
+    // 3. Le reste des paramètres optionnels
+    color: Color = Color.Black,
+)</code></pre>
+
+            <p>Quand tu écriras tes propres composables, <strong>fais pareil</strong>. C'est la convention officielle Google.</p>
+        </article>
+
+        <article class="entry" id="alignment-casing">
+            <h3><code>Alignment</code> vs <code>contentAlignment</code> &amp; conventions de casse Kotlin</h3>
+
+            <p class="question">« C'est quoi <code>contentAlignment</code> et <code>Alignment</code> ? Et pourquoi <code>Alignment</code> a une majuscule ? »</p>
+
+            <h4>Deux choses distinctes dans la même ligne</h4>
+            <pre><code>Box(
+    modifier = Modifier.fillMaxSize(),
+    contentAlignment = Alignment.Center
+    //  ↑ paramètre        ↑ valeur d'un type
+)</code></pre>
+
+            <table>
+                <thead>
+                <tr><th>Élément</th><th>Nature</th><th>Casse</th></tr>
+                </thead>
+                <tbody>
+                <tr><td><code>contentAlignment</code></td><td><strong>paramètre</strong> du composable <code>Box</code> (« où aligner le contenu »)</td><td><code>lowerCamelCase</code></td></tr>
+                <tr><td><code>Alignment</code></td><td><strong>type</strong> (un peu comme un enum)</td><td><code>PascalCase</code></td></tr>
+                <tr><td><code>Alignment.Center</code></td><td><strong>valeur</strong> au sein de ce type (« centré »)</td><td>Conformément au type</td></tr>
+                </tbody>
+            </table>
+
+            <h4>La convention de nommage Kotlin</h4>
+            <p>C'est la même règle qu'en Java, et c'est universel dans presque tous les langages typés :</p>
+
+            <table>
+                <thead>
+                <tr><th>Catégorie</th><th>Convention</th><th>Exemples</th></tr>
+                </thead>
+                <tbody>
+                <tr><td>Classes, interfaces, objets, types</td><td><code>PascalCase</code></td><td><code>Alignment</code>, <code>NotesScreen</code>, <code>NavHostController</code>, <code>Modifier</code></td></tr>
+                <tr><td>Variables, paramètres, fonctions, propriétés</td><td><code>lowerCamelCase</code></td><td><code>contentAlignment</code>, <code>navController</code>, <code>fillMaxSize</code>, <code>noteId</code></td></tr>
+                <tr><td>Constantes <code>const val</code> top-level ou dans un <code>object</code></td><td><code>UPPER_SNAKE_CASE</code></td><td><code>Routes.NOTES</code>, <code>EDITOR_EDIT</code></td></tr>
+                <tr><td>Packages</td><td><code>tout.en.minuscules</code></td><td><code>io.github.marievial2.smartnotes.ui.notes</code></td></tr>
+                </tbody>
+            </table>
+
+            <p>C'est <strong>purement visuel</strong> — le compilateur s'en fiche. Mais en lisant <code>Alignment.Center</code>, tu sais immédiatement :</p>
+            <ul>
+                <li><code>Alignment</code> (majuscule) → c'est un <strong>type</strong>, on accède à quelque chose qu'il expose.</li>
+                <li><code>Center</code> (majuscule aussi) → c'est une <strong>valeur</strong> (constante) au sein de ce type.</li>
+                <li><code>contentAlignment</code> (minuscule) → c'est un <strong>paramètre</strong>, donc une donnée qu'on passe.</li>
+            </ul>
+
+            <h4>Les valeurs disponibles dans <code>Alignment</code></h4>
+            <pre><code>Alignment.TopStart      Alignment.TopCenter      Alignment.TopEnd
+Alignment.CenterStart   Alignment.Center         Alignment.CenterEnd
+Alignment.BottomStart   Alignment.BottomCenter   Alignment.BottomEnd</code></pre>
+
+            <p>9 alignements 2D (3 verticaux × 3 horizontaux), exposés comme des constantes typées. On les utilise comme un <code>enum</code>.</p>
+
+            <blockquote>
+                <p><strong>Pourquoi <code>Start</code>/<code>End</code> plutôt que <code>Left</code>/<code>Right</code> ?</strong> Pour gérer les langues qui s'écrivent de droite à gauche (arabe, hébreu). En LTR (français, anglais), <code>Start</code> = <code>Left</code>. En RTL, <code>Start</code> = <code>Right</code>. Compose le gère automatiquement. Tu n'as <strong>jamais</strong> à utiliser <code>Left</code>/<code>Right</code> (ça existe mais c'est un piège).</p>
+            </blockquote>
+
+            <h4><code>contentAlignment</code> — pourquoi ce nom précis</h4>
+            <p>Le paramètre s'appelle <code>contentAlignment</code> parce que <code>Box</code> peut contenir <strong>plusieurs enfants</strong> empilés. <code>contentAlignment</code> dit « voici l'alignement par défaut <strong>du contenu</strong> » — c'est-à-dire des enfants du <code>Box</code>, pas du <code>Box</code> lui-même.</p>
+
+            <pre><code>Box(
+    modifier = Modifier.fillMaxSize(),
+    contentAlignment = Alignment.Center  // valeur par défaut pour tous les enfants
+) {
+    Text("Au centre")
+    Text(
+        text = "En haut à droite",
+        modifier = Modifier.align(Alignment.TopEnd)  // override individuel
+    )
+}</code></pre>
+
+            <p><strong>Donc</strong> : <code>contentAlignment</code> = alignement global par défaut pour tout le contenu du <code>Box</code>. <code>Modifier.align(...)</code> = override pour un enfant spécifique.</p>
+
+            <div class="recap">
+                <p><strong>Mini-récap :</strong></p>
+                <ul>
+                    <li><code>contentAlignment</code> = paramètre du <code>Box</code> (lowerCamelCase parce que c'est un paramètre).</li>
+                    <li><code>Alignment</code> = type (PascalCase parce que c'est un type), qui expose 9 valeurs prédéfinies (<code>Center</code>, <code>TopStart</code>, etc.).</li>
+                    <li>Règle de casse Kotlin : <code>PascalCase</code> pour les types, <code>lowerCamelCase</code> pour le reste, <code>UPPER_SNAKE_CASE</code> pour les constantes <code>const val</code>.</li>
+                    <li><code>Start</code>/<code>End</code> au lieu de <code>Left</code>/<code>Right</code> pour le support RTL automatique.</li>
+                </ul>
+            </div>
+        </article>
+
+        <article class="entry" id="nav-trois-niveaux">
+            <h3>Les 3 niveaux de la navigation : <code>Routes</code> / <code>NavGraph</code> / <code>navController</code></h3>
+
+            <p class="question">« Grâce à <code>composable()</code>, j'ai fait le lien entre le nom des routes et leur écran ? »</p>
+
+            <p>Oui, exactement. Pour avoir une navigation qui marche, il faut <strong>3 fichiers/objets distincts</strong> qui jouent chacun un rôle clair. Bien les séparer mentalement évite beaucoup de confusion.</p>
+
+            <pre><code>┌────────────────────────────────────────────────────────────────┐
+│ 1. NOMS (Routes.kt)                                            │
+│    "notes", "categories", "editor/{noteId}"...                 │
+│    Juste des chaînes. Aucun comportement.                      │
+└────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌────────────────────────────────────────────────────────────────┐
+│ 2. MAPPING (NavGraph.kt → NavHost { composable(...) })         │
+│    "notes"          → NotesScreen(navController)               │
+│    "categories"     → CategoriesScreen(navController)          │
+│    "editor/{noteId}"→ EditorScreen(navController)              │
+│    Fait à la composition. Statique.                            │
+└────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌────────────────────────────────────────────────────────────────┐
+│ 3. RUNTIME (navController, créé dans MainActivity)             │
+│    Détient la pile de navigation, sait quelle route est        │
+│    courante. Quand on fait navController.navigate("notes"),    │
+│    il regarde dans la table de mapping (2.) quel composable    │
+│    afficher et le swap dans le NavHost.                        │
+└────────────────────────────────────────────────────────────────┘</code></pre>
+
+            <h4>Quand l'utilisateur tape un onglet</h4>
+            <ol>
+                <li>Le clic déclenche <code>navController.navigate(Routes.CATEGORIES)</code>.</li>
+                <li>Le <code>navController</code> met <code>"categories"</code> au sommet de sa pile.</li>
+                <li>Le <code>NavHost</code> voit le changement, va chercher dans <strong>sa table</strong> (les <code>composable("categories") { ... }</code>) le bloc correspondant.</li>
+                <li>Il exécute le lambda → <code>CategoriesScreen(navController)</code> est composé à l'écran.</li>
+            </ol>
+
+            <h4>Sans l'un des trois, l'app casse</h4>
+            <table>
+                <thead>
+                <tr><th>Fichier</th><th>Sans lui…</th></tr>
+                </thead>
+                <tbody>
+                <tr><td><code>Routes.kt</code></td><td>Tu écris des chaînes en dur partout, fautes de frappe non détectées par le compilateur.</td></tr>
+                <tr><td><code>NavGraph.kt</code> (avec <code>composable(...)</code>)</td><td>Compose Navigation ne sait pas quoi afficher, l'app crashe au premier <code>navigate(...)</code>.</td></tr>
+                <tr><td><code>MainActivity</code> (avec <code>rememberNavController()</code> et l'appel à <code>AppNavGraph</code>)</td><td>Pas de contrôleur, pas de NavHost à l'écran, pas de navigation possible.</td></tr>
+                </tbody>
+            </table>
+
+            <p>La pièce magique qui fait le <strong>lien</strong> est bien le <code>composable(route) { ÉcranComposable() }</code>. C'est lui qui transforme une chaîne de caractères en composable concret.</p>
+        </article>
+
+        <article class="entry" id="remember">
+            <h3><code>remember</code> et <code>rememberNavController()</code> : survivre aux recompositions</h3>
+
+            <p class="question">« Pourquoi <code>rememberNavController()</code> et pas juste <code>NavController(...)</code> ? »</p>
+
+            <p>Une fonction <code>@Composable</code> peut être <strong>ré-exécutée des dizaines de fois par seconde</strong> (recomposition) — par exemple chaque fois qu'un état affiché change, Compose ré-exécute la fonction pour produire la nouvelle UI.</p>
+
+            <h4>Le piège</h4>
+            <p>Si tu écrivais :</p>
+            <pre><code>@Composable
+fun Mauvais() {
+    val navController = NavController(...)  // ❌
+    // ...
+}</code></pre>
+
+            <p>Un <strong>nouveau</strong> <code>navController</code> serait créé <strong>à chaque recomposition</strong> → la pile de navigation serait perdue à chaque clic. L'app ne saurait jamais où elle est.</p>
+
+            <h4>La solution : <code>remember { ... }</code></h4>
+            <p><code>remember</code> est le mécanisme Compose pour <strong>« crée cette valeur la première fois, et garde-la d'une recomposition à l'autre »</strong>.</p>
+
+            <pre><code>@Composable
+fun Bon() {
+    val navController = remember { NavController(...) }  // ✅
+    // ...
+}</code></pre>
+
+            <p><code>rememberNavController()</code> est juste un raccourci pré-câblé pour le navController :</p>
+
+            <pre><code>val navController = rememberNavController()
+// équivalent grosso modo à :
+val navController = remember { NavHostController(...) }</code></pre>
+
+            <h4>La règle générale à retenir</h4>
+            <blockquote>
+                <p><strong>Toute valeur qui doit survivre aux recompositions doit être enveloppée dans un <code>remember { ... }</code></strong>. Sans, elle est recalculée à chaque fois.</p>
+            </blockquote>
+
+            <p>Tu vas voir <code>remember</code> partout en Compose : <code>remember { mutableStateOf(...) }</code>, <code>rememberCoroutineScope()</code>, <code>rememberSaveable</code>, etc. Familiarise-toi avec.</p>
+
+            <h4>Et la rotation d'écran ?</h4>
+            <p>Attention : <code>remember</code> survit aux recompositions, <strong>mais pas à la destruction-recréation de l'Activity</strong> (ex: rotation de l'écran). Pour ça, il faut <code>rememberSaveable</code> ou un <code>ViewModel</code>. À voir plus tard quand on aura besoin de persister un état utilisateur.</p>
+        </article>
+
+        <article class="entry" id="current-route">
+            <h3><code>currentBackStackEntryAsState()</code> : observer la route courante</h3>
+
+            <p>Comment savoir, à tout instant, quelle route est affichée — pour pouvoir mettre en évidence le bon onglet de la bottom nav ?</p>
+
+            <h4>Le navController a deux APIs</h4>
+            <table>
+                <thead>
+                <tr><th>API</th><th>Réactif ?</th><th>Quand l'utiliser</th></tr>
+                </thead>
+                <tbody>
+                <tr><td><code>navController.currentBackStackEntry</code></td><td>❌ non</td><td>Lecture ponctuelle (callback, méthode non-Composable).</td></tr>
+                <tr><td><code>navController.currentBackStackEntryAsState()</code></td><td>✅ oui — retourne un <code>State</code></td><td>Dans une fonction <code>@Composable</code> — Compose recompose quand la route change.</td></tr>
+                </tbody>
+            </table>
+
+            <h4>Usage typique</h4>
+            <pre><code>val backStackEntry by navController.currentBackStackEntryAsState()
+val currentRoute = backStackEntry?.destination?.route</code></pre>
+
+            <h4>Le <code>by</code> à la place du <code>=</code></h4>
+            <p><code>currentBackStackEntryAsState()</code> retourne un <code>State&lt;NavBackStackEntry?&gt;</code>. Pour lire la valeur, tu pourrais faire <code>state.value</code>. Mais Kotlin propose un <strong>delegate</strong> avec <code>by</code> qui te donne directement la valeur sans <code>.value</code> :</p>
+
+            <pre><code>// Sans delegate
+val backStackEntryState = navController.currentBackStackEntryAsState()
+val currentRoute = backStackEntryState.value?.destination?.route
+
+// Avec delegate "by" (équivalent, plus lisible)
+val backStackEntry by navController.currentBackStackEntryAsState()
+val currentRoute = backStackEntry?.destination?.route</code></pre>
+
+            <p>Pour que <code>by</code> fonctionne sur un <code>State</code>, il faut l'import <code>androidx.compose.runtime.getValue</code>. Android Studio l'ajoute automatiquement.</p>
+
+            <h4>Pourquoi un <code>?</code> partout</h4>
+            <p>Quand l'app démarre, il y a un instant très bref où aucune destination n'est encore active → <code>backStackEntry</code> peut être <code>null</code>. Le <code>?</code> dit à Kotlin « si c'est null, propage le null ; sinon continue ». Sans le <code>?</code>, Kotlin refuse de compiler par sécurité.</p>
+        </article>
+
+        <article class="entry" id="scaffold-parent">
+            <h3>Le <code>Scaffold</code> parent et <code>innerPadding</code></h3>
+
+            <h4><code>Scaffold</code> : la structure standard d'un écran</h4>
+            <p><code>Scaffold</code> est le composable Material 3 qui donne <strong>la structure standard d'un écran</strong> avec des "slots" :</p>
+
+            <table>
+                <thead>
+                <tr><th>Slot</th><th>Rôle</th></tr>
+                </thead>
+                <tbody>
+                <tr><td><code>topBar</code></td><td>barre du haut (titre, boutons retour/menu)</td></tr>
+                <tr><td><code>bottomBar</code></td><td>barre du bas (bottom nav, ou actions globales)</td></tr>
+                <tr><td><code>floatingActionButton</code></td><td>FAB rond flottant (typiquement "+")</td></tr>
+                <tr><td><code>content</code> (le bloc <code>{ padding -&gt; ... }</code>)</td><td>contenu principal</td></tr>
+                </tbody>
+            </table>
+
+            <h4>Règle : un seul <code>Scaffold</code> parent</h4>
+            <p>Dans une app à navigation centralisée (bottom nav, drawer, etc.), il y a <strong>un seul Scaffold parent</strong> dans <code>MainActivity</code>. Les écrans individuels mettent leur contenu directement, <strong>sans réinventer la chrome</strong> (top bar, bottom bar). Sinon tu te retrouves avec des Scaffolds imbriqués, deux barres potentielles, des paddings qui s'empilent.</p>
+
+            <p>(Plus tard, un écran spécifique peut quand même avoir son propre Scaffold s'il a besoin d'une <code>TopAppBar</code> particulière — par exemple <code>NotesScreen</code> avec son menu de tri. C'est l'exception.)</p>
+
+            <h4>Le piège de l'<code>innerPadding</code></h4>
+            <pre><code>Scaffold(
+    modifier = Modifier.fillMaxSize(),
+    bottomBar = { /* la bottom nav */ }
+) { innerPadding ->
+    Box(modifier = Modifier.padding(innerPadding)) {
+        AppNavGraph(navController)
+    }
+}</code></pre>
+
+            <p>Le <code>Scaffold</code> calcule <strong>l'espace restant</strong> pour le contenu une fois que les barres sont posées. Il te passe ce calcul via <code>innerPadding</code> (le <code>(innerPadding) -&gt; ...</code> du lambda).</p>
+
+            <p><strong>Tu dois absolument utiliser ce <code>innerPadding</code></strong> sur le contenu (via <code>Modifier.padding(innerPadding)</code>), sinon le contenu va passer <strong>sous</strong> la bottom bar et tu ne verras pas les derniers éléments. C'est le piège le plus classique avec <code>Scaffold</code>.</p>
+        </article>
+
+        <article class="entry" id="bottom-nav-pattern">
+            <h3><code>NavigationBar</code> Material 3 et le pattern bottom nav officiel</h3>
+
+            <h4><code>NavigationBar</code> + <code>NavigationBarItem</code></h4>
+            <p>Le composable Material 3 officiel pour la barre du bas. Chaque item a 4 paramètres principaux :</p>
+
+            <pre><code>NavigationBar {
+    NavigationBarItem(
+        selected = currentRoute == "notes",
+        onClick = { navController.navigate("notes") { ... } },
+        icon = { Icon(Icons.Filled.Description, contentDescription = "Notes") },
+        label = { Text("Notes") }
+    )
+    // ... 2 autres items
+}</code></pre>
+
+            <table>
+                <thead>
+                <tr><th>Paramètre</th><th>Rôle</th></tr>
+                </thead>
+                <tbody>
+                <tr><td><code>selected: Boolean</code></td><td><code>true</code> → item mis en évidence (couleur primaire, fond).</td></tr>
+                <tr><td><code>onClick: () -&gt; Unit</code></td><td>Callback quand on tape l'item → on déclenche la navigation.</td></tr>
+                <tr><td><code>icon</code></td><td>Composable de l'icône (typiquement <code>Icon(Icons.Filled.X, ...)</code>).</td></tr>
+                <tr><td><code>label</code></td><td>Composable du texte sous l'icône.</td></tr>
+                </tbody>
+            </table>
+
+            <h4>Le pattern officiel — pourquoi 3 options sur <code>navigate</code></h4>
+            <pre><code>navController.navigate(tab.route) {
+    popUpTo(Routes.CATEGORIES) { saveState = true }
+    launchSingleTop = true
+    restoreState = true
+}</code></pre>
+
+            <p>Sans ces options, tu vas avoir 3 bugs subtils :</p>
+            <ul>
+                <li>la pile de back grossit infiniment (Notes → Catégories → Tags → Notes → … et le bouton retour Android te fait remonter toutes les étapes au lieu de fermer l'app),</li>
+                <li>l'état de chaque onglet (scroll, recherche en cours) est perdu quand tu changes d'onglet,</li>
+                <li>tu peux empiler plusieurs instances du même onglet.</li>
+            </ul>
+
+            <table>
+                <thead>
+                <tr><th>Option</th><th>Effet</th></tr>
+                </thead>
+                <tbody>
+                <tr><td><code>popUpTo(Routes.CATEGORIES) { saveState = true }</code></td><td>Vide la back stack jusqu'à l'onglet d'accueil avant d'aller au nouvel onglet. <code>saveState = true</code> sauvegarde l'état de la destination virée pour pouvoir le restaurer plus tard.</td></tr>
+                <tr><td><code>launchSingleTop = true</code></td><td>Si la destination demandée est <strong>déjà</strong> au sommet de la pile, ne crée pas une nouvelle instance. Évite d'empiler 5 NotesScreen quand on tape 5 fois Notes.</td></tr>
+                <tr><td><code>restoreState = true</code></td><td>Si on revient sur un onglet déjà visité, restaure son état sauvegardé (couplé avec <code>saveState = true</code>).</td></tr>
+                </tbody>
+            </table>
+
+            <p><strong>Convention</strong> : on <code>popUpTo</code> la <code>startDestination</code> de l'app. Pour SmartNotes, c'est <code>Routes.CATEGORIES</code>. Si on changeait l'écran d'accueil, il faudrait changer cette ligne aussi.</p>
+
+            <h4>Whitelist <code>showBottomBar</code> (whitelist vs blacklist)</h4>
+            <pre><code>val showBottomBar = currentRoute in listOf(
+    Routes.NOTES,
+    Routes.CATEGORIES,
+    Routes.TAGS
+)</code></pre>
+
+            <p>On affiche la bottom bar <strong>uniquement</strong> sur ces 3 routes. Sur <code>EDITOR_NEW</code>/<code>EDITOR_EDIT</code>, <code>showBottomBar</code> est <code>false</code> → la barre disparaît.</p>
+
+            <p><strong>Pourquoi une whitelist plutôt qu'une blacklist ?</strong> Si tu fais <code>currentRoute !in listOf(EDITOR_NEW, EDITOR_EDIT)</code>, ça marche aujourd'hui, mais le jour où tu ajoutes un écran "settings" en plein écran, tu dois penser à l'ajouter à la liste pour cacher la barre — facile à oublier. Avec la whitelist, par défaut <strong>tout nouvel écran cache la barre</strong>, et tu ne l'ajoutes que si tu veux qu'elle s'affiche. Plus sûr.</p>
+
+            <h4>Le conflit de noms à anticiper</h4>
+            <blockquote class="warning">
+                <p>On a déjà une <strong>classe</strong> <code>SmartNotesApp</code> (l'<code>Application</code>, étape 2). Si on nomme aussi le composable racine <code>SmartNotesApp</code>, conflit. <strong>On l'appelle <code>SmartNotesAppRoot</code></strong>.</p>
+            </blockquote>
+        </article>
+
+        <article class="entry" id="material-icons">
+            <h3>Material Icons en Compose : core vs extended</h3>
+
+            <p class="question">« D'où viennent les <code>Icons.Filled.X</code> ? »</p>
+
+            <p>C'est le <strong>catalogue Material Icons</strong> de Google, packagé en composables Kotlin par l'équipe Compose. Chaque icône est un <code>ImageVector</code> (vecteur SVG) prêt à dessiner avec le composable <code>Icon</code>.</p>
+
+            <pre><code>import androidx.compose.material.icons.Icons          // l'objet racine
+import androidx.compose.material.icons.filled.Folder  // une icône précise
+
+Icon(Icons.Filled.Folder, contentDescription = "Dossier")</code></pre>
+
+            <h4>Les 5 styles disponibles</h4>
+            <p>Le même catalogue existe en 5 styles. Tu choisis celui qui te plaît, l'icône reste la même conceptuellement :</p>
+
+            <table>
+                <thead>
+                <tr><th>Style</th><th>Aspect</th><th>Package</th></tr>
+                </thead>
+                <tbody>
+                <tr><td><code>Icons.Filled.X</code></td><td>plein, sans contour</td><td><code>...icons.filled.X</code></td></tr>
+                <tr><td><code>Icons.Outlined.X</code></td><td>contour fin, intérieur vide</td><td><code>...icons.outlined.X</code></td></tr>
+                <tr><td><code>Icons.Rounded.X</code></td><td>arrondi, doux</td><td><code>...icons.rounded.X</code></td></tr>
+                <tr><td><code>Icons.Sharp.X</code></td><td>anguleux, contours nets</td><td><code>...icons.sharp.X</code></td></tr>
+                <tr><td><code>Icons.TwoTone.X</code></td><td>bicolore</td><td><code>...icons.twotone.X</code></td></tr>
+                </tbody>
+            </table>
+
+            <p>Material 3 par défaut utilise <code>Filled</code> pour les onglets sélectionnés et <code>Outlined</code> pour les non-sélectionnés.</p>
+
+            <h4>Le piège : 2 dépendances gradle séparées</h4>
+            <table>
+                <thead>
+                <tr><th>Lib</th><th>Contenu</th><th>Poids</th></tr>
+                </thead>
+                <tbody>
+                <tr><td><code>material-icons-core</code></td><td>~30 icônes très courantes (<code>Add</code>, <code>ArrowBack</code>, <code>Check</code>, <code>Close</code>, <code>Edit</code>, <code>Home</code>, <code>List</code>, <code>Menu</code>, <code>Search</code>, <code>Settings</code>, <code>Star</code>...)</td><td>léger</td></tr>
+                <tr><td><code>material-icons-extended</code></td><td>tout le catalogue Material (~6000+ icônes : <code>Folder</code>, <code>Description</code>, <code>Label</code>...)</td><td>~22 MB en debug, mais R8/ProGuard tree-shake en release → impact final négligeable</td></tr>
+                </tbody>
+            </table>
+
+            <p>Google a séparé pour ne pas obliger les apps qui n'utilisent que 5 icônes à embarquer 6000.</p>
+
+            <h4>Comment ajouter <code>material-icons-extended</code> avec un version catalog</h4>
+            <p>Avec une structure Gradle moderne (<code>libs.versions.toml</code>), 2 fichiers à toucher.</p>
+
+            <p><strong>1. <code>gradle/libs.versions.toml</code></strong> — section <code>[libraries]</code> :</p>
+
+            <pre><code>androidx-compose-material-icons-extended = { group = "androidx.compose.material", name = "material-icons-extended" }</code></pre>
+
+            <p>Pas de <code>version.ref</code> parce que la version est gérée par le BOM Compose.</p>
+
+            <p><strong>2. <code>app/build.gradle.kts</code></strong> — bloc <code>dependencies { ... }</code> :</p>
+
+            <pre><code>implementation(libs.androidx.compose.material.icons.extended)</code></pre>
+
+            <p><strong>3. Sync gradle</strong> — Android Studio affiche "Gradle files have changed" → cliquer "Sync Now".</p>
+
+            <h4>Comment savoir si une icône existe</h4>
+            <ul>
+                <li>Tape <code>Icons.Filled.</code> dans Android Studio → l'autocomplétion liste tout ce qui est dispo selon les libs incluses.</li>
+                <li>Catalogue visuel en ligne : <a href="https://fonts.google.com/icons">fonts.google.com/icons</a> — donne le nom exact à utiliser dans Compose.</li>
+            </ul>
+
+            <div class="recap">
+                <p><strong>Pour SmartNotes</strong> : on utilise <code>material-icons-extended</code> dès l'étape 3 pour avoir <code>Folder</code>, <code>Description</code>, <code>Label</code>. Le tree-shaking en release fait que l'APK final n'embarque que les icônes effectivement utilisées.</p>
+            </div>
+        </article>
+
+        <article class="entry" id="stub-trap">
+            <h3>Le piège du stub <code>TODO</code> créé par Android Studio</h3>
+
+            <p class="question">Bug rencontré pendant l'étape 3 : l'app crashe au lancement avec <code>NotImplementedError: An operation is not implemented: Not yet implemented</code>.</p>
+
+            <h4>Le scénario</h4>
+            <p>Tu écris dans <code>MainActivity.kt</code> :</p>
+            <pre><code>AppNavGraph(navController)</code></pre>
+
+            <p>Mais tu n'as pas <strong>encore</strong> ajouté l'import qui pointe vers la vraie fonction (celle du fichier <code>navigation/NavGraph.kt</code>). Android Studio voit une référence non résolue et te propose plusieurs quick-fixes en surlignage rouge, dont :</p>
+
+            <ul>
+                <li>✅ <strong>« Import »</strong> — ajoute l'<code>import io.github.marievial2.smartnotes.navigation.AppNavGraph</code> en haut du fichier. C'est ce qu'on veut.</li>
+                <li>❌ <strong>« Create function 'AppNavGraph' »</strong> — crée une fonction stub vide dans le fichier courant.</li>
+            </ul>
+
+            <p>Si tu cliques par erreur sur le mauvais quick-fix (ou si tu valides avec Entrée trop vite), Android Studio te génère ça en bas du fichier :</p>
+
+            <pre><code>@Composable
+fun AppNavGraph(x0: NavHostController) {
+    TODO("Not yet implemented")
+}</code></pre>
+
+            <h4>Pourquoi ça crashe l'app</h4>
+            <p>Quand une fonction est définie <strong>dans le même fichier</strong> que là où on l'appelle, elle a <strong>priorité sur tout import</strong>. Donc <code>AppNavGraph(navController)</code> appelle ce stub local, pas le vrai. Et la fonction <code>TODO(...)</code> de la stdlib Kotlin lève une <code>NotImplementedError</code> à chaque appel — elle n'existe que pour marquer du code à compléter.</p>
+
+            <h4>Comment repérer le bug</h4>
+            <ul>
+                <li><strong>Symptôme</strong> : l'app compile (<code>BUILD SUCCESSFUL</code>) mais crashe immédiatement à l'ouverture.</li>
+                <li><strong>Logcat</strong> : <code>FATAL EXCEPTION</code> avec <code>NotImplementedError: An operation is not implemented: Not yet implemented</code>.</li>
+                <li><strong>Indice</strong> : le paramètre s'appelle <code>x0</code> (Android Studio nomme automatiquement les paramètres générés <code>x0</code>, <code>x1</code>, etc. — un nom humain ne ressemblerait jamais à ça). Si tu vois <code>x0</code> quelque part, c'est presque toujours le signe d'un quick-fix mal placé.</li>
+            </ul>
+
+            <h4>Comment corriger</h4>
+            <ol>
+                <li>Supprimer entièrement la fonction stub.</li>
+                <li>Ajouter le bon <code>import</code> en haut du fichier.</li>
+            </ol>
+
+            <h4>Comment l'éviter à l'avenir</h4>
+            <blockquote class="warning">
+                <p>Quand Android Studio te propose des quick-fixes pour une référence rouge, <strong>vérifie toujours ce que tu cliques</strong>. <code>Import</code> est presque toujours ce que tu veux quand tu sais que la fonction existe ailleurs. Évite <code>Create function</code> sauf si tu es vraiment en train de créer une nouvelle fonction.</p>
+                <p>Le réflexe sûr : <code>Alt+Enter</code> ouvre le menu mais te laisse choisir avec les flèches — ne valide pas trop vite avec Entrée.</p>
+            </blockquote>
+
+            <p>On avait déjà rencontré le même piège à l'étape 1 dans <code>NavGraph.kt</code> avec des stubs <code>NotesScreen</code>/<code>EditorScreen</code> qui dupliquaient les vrais écrans. Même cause, même conséquence.</p>
+        </article>
+
+    </section>
+
+    <section class="session" id="session-debrief-mainactivity">
+        <div class="session-header">
+            <h2>Debrief MainActivity (étape 3.5) <span class="date">— 2026-05-05</span></h2>
+        </div>
+
+        <blockquote>
+            <p>À la fin de l'étape 3.5, le code de <code>MainActivity.kt</code> avait été appliqué mais pas digéré. Cette session reprend le fichier <strong>ligne par ligne</strong> pour clarifier les concepts denses (pile, <code>State</code>, delegate <code>by</code>, slots Compose, whitelist). Elle <strong>complète</strong> les articles existants (<a href="#remember"><code>#remember</code></a>, <a href="#current-route"><code>#current-route</code></a>, <a href="#scaffold-parent"><code>#scaffold-parent</code></a>, <a href="#bottom-nav-pattern"><code>#bottom-nav-pattern</code></a>) plutôt que les remplacer.</p>
+        </blockquote>
+
+        <article class="entry" id="mainscreen-renaming">
+            <h3>Renommage <code>SmartNotesAppRoot</code> → <code>MainScreen</code></h3>
+
+            <p class="question">« Pourquoi le composable racine ne peut pas s'appeler <code>SmartNotesApp</code> tout court ? »</p>
+
+            <p>Une app Compose forme un <strong>arbre</strong> de composables : <code>MainActivity</code> appelle un composable racine, qui appelle <code>Scaffold</code>, qui appelle <code>AppBottomBar</code> et <code>AppNavGraph</code>, qui appellent <code>CategoriesScreen</code>, etc. Il faut un nom pour ce composable au sommet de l'arbre.</p>
+
+            <p>Le piège : on a déjà une <strong>classe</strong> <code>SmartNotesApp</code> dans le projet — c'est la classe <code>android.app.Application</code> créée à l'étape 2 (cf. <a href="#smartnotesapp"><code>#smartnotesapp</code></a>). Si on nommait aussi le composable <code>SmartNotesApp</code>, on aurait deux entités <strong>différentes</strong> avec le même nom :</p>
+            <ul>
+                <li><code>class SmartNotesApp : Application</code> — objet Android, vit pendant tout le process.</li>
+                <li><code>@Composable fun SmartNotesApp()</code> — composable UI.</li>
+            </ul>
+            <p>Légal en Kotlin (namespaces différents), mais source de confusion énorme à la lecture et imports ambigus.</p>
+
+            <h4>Choix de nom</h4>
+            <p>La première version utilisait <code>SmartNotesAppRoot</code> (suffixe « Root » pour signaler la racine de l'arbre Compose). Marie l'a renommé en <strong><code>MainScreen</code></strong> — plus court, plus parlant, sans collision avec la classe Application. Les deux sont valides ; ce qui compte c'est que le nom soit <strong>distinct</strong> de la classe <code>Application</code>.</p>
+
+            <div class="recap">
+                <p><strong>À retenir</strong> : nomme le composable racine de manière à le <strong>distinguer</strong> de la classe <code>Application</code> du même projet. <code>MainScreen</code>, <code>AppContent</code>, <code>SmartNotesUi</code>, <code>SmartNotesAppRoot</code>… au choix.</p>
+            </div>
+        </article>
+
+        <article class="entry" id="component-activity">
+            <h3>Pont Android ↔ Compose : <code>ComponentActivity</code>, <code>onCreate</code>, <code>setContent</code></h3>
+
+            <p>Le bloc 1 de <code>MainActivity.kt</code> est <strong>le pont entre Android et Compose</strong>. Android au démarrage ne sait pas parler Compose : il sait lancer une <code>Activity</code> et lui appeler <code>onCreate</code>. C'est dans cet <code>onCreate</code> qu'on bascule en Compose.</p>
+
+            <pre><code>class MainActivity : ComponentActivity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
+        setContent {
+            SmartNotesTheme {
+                MainScreen()
+            }
+        }
+    }
+}</code></pre>
+
+            <table>
+                <thead>
+                <tr><th>Élément</th><th>Rôle</th></tr>
+                </thead>
+                <tbody>
+                <tr><td><code>ComponentActivity</code></td><td>Classe Android la plus minimale qui sait afficher du Compose. Apporte la fonction d'extension <code>setContent { ... }</code>. Pour une app 100% Compose, elle suffit (pas besoin d'<code>AppCompatActivity</code> qui vient du monde XML/Material1).</td></tr>
+                <tr><td><code>onCreate(savedInstanceState)</code></td><td>Première méthode appelée par le système quand l'Activity est créée (au lancement de l'app, ou après une rotation d'écran). Le <code>Bundle?</code> contient l'état sauvegardé en cas de recréation — pas utilisé ici, Compose gère son état lui-même via <code>rememberSaveable</code>.</td></tr>
+                <tr><td><code>super.onCreate(...)</code></td><td><strong>Obligatoire</strong>. Laisse le parent (<code>ComponentActivity</code>) faire son init avant la tienne. L'oublier plante l'app.</td></tr>
+                <tr><td><code>enableEdgeToEdge()</code></td><td>Demande au système de dessiner sous la status bar et la nav bar (au lieu de laisser des bandes grises). Standard Material 3. Côté Scaffold, c'est ce qui produit ensuite des <code>innerPadding</code> non nuls pour que ton contenu ne passe pas sous l'horloge.</td></tr>
+                <tr><td><code>setContent { ... }</code></td><td>Fonction d'extension de <code>androidx.activity.compose</code>. Remplace le <code>setContentView(R.layout.xxx)</code> du monde XML. Le bloc <code>{ ... }</code> est un composable racine.</td></tr>
+                <tr><td><code>SmartNotesTheme { ... }</code></td><td>Ton thème M3 (couleurs, typo, formes), généré par Android Studio dans <code>ui/theme/Theme.kt</code>. Il fournit <code>MaterialTheme.colorScheme.primary</code>, etc. à tous les enfants via un <code>CompositionLocal</code>. <strong>Tout composable qui veut utiliser ces couleurs doit être à l'intérieur</strong>.</td></tr>
+                </tbody>
+            </table>
+        </article>
+
+        <article class="entry" id="nav-stack">
+            <h3>La pile de navigation — analogie de la pile d'assiettes</h3>
+
+            <p class="question">« Je pense que je ne comprends pas parfaitement cette histoire de pile. »</p>
+
+            <p>Une <strong>pile</strong> (en anglais <em>stack</em>) en informatique, c'est exactement comme une pile d'assiettes&nbsp;:</p>
+            <ul>
+                <li>Tu <strong>empiles</strong> une nouvelle assiette → elle se met sur le dessus.</li>
+                <li>Tu <strong>dépiles</strong> → tu prends celle du dessus, et la suivante devient visible.</li>
+                <li>Tu ne peux toucher qu'à celle du <strong>dessus</strong>.</li>
+            </ul>
+
+            <p>En Android, <strong>chaque écran que tu visites est une assiette</strong>. La pile garde l'historique de ta navigation.</p>
+
+            <h4>Exemple concret avec SmartNotes</h4>
+
+            <p>Lancement de l'app :</p>
+            <pre><code>Pile : [Categories]
+        ↑ écran de départ, seul sur la pile
+        Compose affiche : Categories (le sommet)</code></pre>
+
+            <p>L'utilisateur clique l'onglet « Notes » :</p>
+            <pre><code>Pile : [Categories, Notes]
+                    ↑ Notes empilé par-dessus
+                    Compose affiche : Notes</code></pre>
+
+            <p>Il clique une note pour l'éditer :</p>
+            <pre><code>Pile : [Categories, Notes, Editor]
+                            ↑ Editor empilé
+                            Compose affiche : Editor</code></pre>
+
+            <p>Il appuie sur le <strong>bouton retour</strong> du téléphone :</p>
+            <pre><code>Pile : [Categories, Notes]
+                    ↑ Editor dépilé
+                    Compose affiche : Notes (à nouveau)</code></pre>
+
+            <div class="recap">
+                <p>Le bouton retour Android, <strong>physiquement</strong>, c'est juste « dépiler ». C'est pour ça qu'il « te ramène en arrière » : tu reviens à l'assiette précédente.</p>
+                <p>C'est le <code>NavController</code> (créé par <code>rememberNavController()</code>) qui maintient cette pile. Ses méthodes : <code>navigate("notes")</code> empile, <code>popBackStack()</code> dépile.</p>
+            </div>
+        </article>
+
+        <article class="entry" id="navhost-vs-navcontroller">
+            <h3>NavController = télécommande, NavHost = téléviseur</h3>
+
+            <p class="question">« Je crois que je ne comprends pas à quoi sert NavHost (rappelle moi où il est). »</p>
+
+            <h4>Où est NavHost ?</h4>
+            <p>Il est dans <code>navigation/NavGraph.kt</code> :</p>
+            <pre><code>@Composable
+fun AppNavGraph(navController: NavHostController) {
+    NavHost(                           // ← le voici
+        navController = navController,
+        startDestination = Routes.CATEGORIES
+    ) {
+        composable(Routes.CATEGORIES) { CategoriesScreen(navController) }
+        composable(Routes.TAGS)       { TagsScreen(navController) }
+        composable(Routes.NOTES)      { NotesScreen(navController) }
+        composable(Routes.EDITOR_NEW) { EditorScreen(navController) }
+        composable(Routes.EDITOR_EDIT){ EditorScreen(navController) }
+    }
+}</code></pre>
+
+            <p>Et il est <strong>appelé</strong> dans <code>MainActivity.kt</code> dans le slot content du Scaffold :</p>
+            <pre><code>Box(modifier = Modifier.padding(innerPadding)) {
+    AppNavGraph(navController)        // ← l'appel
+}</code></pre>
+
+            <h4>Ce que fait NavHost</h4>
+            <p>C'est <strong>le composable qui regarde le sommet de la pile, et qui affiche l'écran correspondant</strong>.</p>
+            <ul>
+                <li>Tu lui donnes un <code>navController</code> (pour qu'il puisse lire la pile).</li>
+                <li>Tu lui donnes un <code>startDestination</code> (la première assiette à empiler quand l'app démarre).</li>
+                <li>Tu lui donnes une <strong>table de correspondance</strong> « route ↔ écran » via les <code>composable("...") { ... }</code>.</li>
+            </ul>
+
+            <p>À chaque changement de pile :</p>
+            <ol>
+                <li>NavHost regarde le sommet (ex&nbsp;: <code>"notes"</code>).</li>
+                <li>Il cherche dans sa table le bloc associé (ex&nbsp;: <code>composable(Routes.NOTES) { NotesScreen(...) }</code>).</li>
+                <li>Il affiche ce bloc.</li>
+            </ol>
+
+            <div class="recap">
+                <p><strong>Métaphore clé</strong> : <strong>NavHost = le téléviseur. NavController = la télécommande.</strong> Le NavController dit « passe à la chaîne notes » en empilant <code>"notes"</code>, et le NavHost se met à afficher <code>NotesScreen</code>.</p>
+            </div>
+        </article>
+
+        <article class="entry" id="nav-back-stack-entry">
+            <h3>Qu'est-ce qu'un <code>NavBackStackEntry</code> ? Pourquoi nullable ?</h3>
+
+            <p class="question">« C'est quoi <code>backStackEntry</code> ? »</p>
+
+            <p>Un <code>NavBackStackEntry</code>, c'est <strong>l'objet qui représente une assiette dans la pile</strong>. Pour un écran donné dans la pile, il contient :</p>
+            <ul>
+                <li><strong><code>destination</code></strong> : l'objet qui décrit cette destination (sa route, son label éventuel, ses arguments attendus). C'est de là qu'on tire <code>.route</code>.</li>
+                <li><strong><code>arguments</code></strong> : les paramètres passés à cet écran (ex&nbsp;: pour <code>editor/{noteId}</code>, le <code>noteId</code> réel comme <code>"42"</code>).</li>
+                <li>D'autres champs qu'on n'utilise pas encore (<code>savedStateHandle</code>, <code>lifecycle</code>…).</li>
+            </ul>
+
+            <p>Donc <code>backStackEntry.destination.route</code> te donne la string <code>"notes"</code>, <code>"categories"</code>, etc. — la route de l'écran <strong>actuellement au sommet de la pile</strong>.</p>
+
+            <p><code>currentBackStackEntryAsState()</code> veut dire littéralement : <strong>« l'entrée actuellement en haut de la pile, exposée comme un <code>State</code> observable »</strong>.</p>
+
+            <h4>Pourquoi <code>NavBackStackEntry?</code> (avec un <code>?</code>) ?</h4>
+
+            <p>Au tout premier rendu de l'app, le <code>NavHost</code> n'a <strong>pas encore eu le temps de pousser sa première destination</strong> sur la pile. Il y a un micro-instant où la pile est vide → <code>currentBackStackEntry</code> est <code>null</code>.</p>
+
+            <p>Chronologie au lancement :</p>
+            <ol>
+                <li>Compose démarre <code>MainScreen</code>.</li>
+                <li><code>navController</code> est créé. Sa pile est <strong>vide</strong> à ce moment-là.</li>
+                <li>On demande <code>currentBackStackEntryAsState()</code> → la pile est vide → renvoie <code>null</code>.</li>
+                <li>Plus tard (quelques µs après) : NavHost s'exécute, voit <code>startDestination = CATEGORIES</code>, empile <code>"categories"</code>.</li>
+                <li>La pile change → <code>currentBackStackEntryAsState</code> se met à jour → <code>backStackEntry</code> n'est plus <code>null</code> → recomposition.</li>
+            </ol>
+
+            <p>D'où le <code>?</code> sur <code>NavBackStackEntry?</code> : il y a ce micro-instant entre 2 et 4 où c'est <code>null</code>. Le code doit gérer ce cas :</p>
+            <pre><code>val currentRoute = backStackEntry?.destination?.route
+//                              ↑               ↑
+//                              safe-call : si null, le résultat est null,
+//                              sans plantage</code></pre>
+        </article>
+
+        <article class="entry" id="state-journal">
+            <h3><code>State&lt;T&gt;</code> : le journal abonnable de Compose</h3>
+
+            <p class="question">« Je ne comprends pas <code>State&lt;T&gt;</code>. »</p>
+
+            <h4>Le problème que ça résout</h4>
+            <p>En Compose, ta fonction <code>@Composable</code> est <strong>rejouée</strong> chaque fois que l'UI doit se rafraîchir. Mais Compose ne va pas tout rejouer en boucle 60 fois par seconde — ce serait du gâchis. Il a besoin de <strong>savoir précisément quand rejouer, et quoi rejouer</strong>. <code>State&lt;T&gt;</code> est la réponse.</p>
+
+            <h4>L'analogie : un abonnement à un journal</h4>
+
+            <blockquote>
+                <p>Imagine que <code>State&lt;Int&gt;</code> soit <strong>un abonnement à un journal qui contient un seul nombre</strong>.</p>
+                <ul>
+                    <li>Si tu <strong>lis</strong> ce journal dans une fonction <code>@Composable</code>, Compose note : « ah, ce composable est abonné à ce journal ».</li>
+                    <li>Quand le contenu du journal <strong>change</strong> (quelqu'un publie un nouveau numéro), Compose envoie un coup de fil à <strong>tous les composables abonnés</strong> : « hé, votre journal a changé, refaites votre rendu ».</li>
+                    <li>Les composables qui n'ont jamais lu ce journal ne sont <strong>pas dérangés</strong>.</li>
+                </ul>
+            </blockquote>
+
+            <p>C'est ça, la <strong>recomposition ciblée</strong>.</p>
+
+            <h4>Concrètement dans <code>MainScreen</code></h4>
+            <pre><code>val backStackEntry by navController.currentBackStackEntryAsState()
+//                    └──────────────────────────────────────────┘
+//                    Cette fonction renvoie un State&lt;NavBackStackEntry?&gt;
+//                    = un journal qui publie l'entrée actuelle au sommet de la pile.</code></pre>
+
+            <ul>
+                <li>Tant que tu es sur Categories, le journal contient <code>entrée(route="categories")</code>.</li>
+                <li>Tu cliques Notes → la pile change → le journal publie un nouveau numéro <code>entrée(route="notes")</code>.</li>
+                <li>Compose voit que <code>MainScreen</code> lit ce journal (via <code>backStackEntry</code>) → il <strong>rejoue</strong> <code>MainScreen</code>.</li>
+                <li>Du coup <code>currentRoute</code> recalcule à <code>"notes"</code>, <code>showBottomBar</code> recalcule, le Scaffold se redessine — tout ça <strong>tout seul</strong>.</li>
+            </ul>
+
+            <h4>Différence avec un <code>val</code> normal</h4>
+            <pre><code>val x = 5                      // figé, ne change jamais
+val x = mutableStateOf(5)      // un journal, abonnable, déclenche des recompositions</code></pre>
+
+            <p>Si à la place de <code>currentBackStackEntryAsState()</code> on avait écrit <code>currentBackStackEntry</code> (la version non-<code>State</code>), on aurait eu la valeur <strong>à l'instant T</strong>, mais sans abonnement → pas de recompo automatique quand la pile change → la bottom bar resterait figée. C'est pour ça qu'on utilise toujours la variante <code>...AsState()</code> quand on veut <strong>réagir</strong> au changement.</p>
+
+            <div class="recap">
+                <p><strong>Mnémo</strong> : tout ce qui finit en <code>AsState()</code> ou qui est créé par <code>mutableStateOf</code> est un journal abonnable. Compose se charge du reste.</p>
+            </div>
+        </article>
+
+        <article class="entry" id="by-delegate">
+            <h3>Le delegate <code>by</code> : sucre syntaxique sur <code>State.value</code></h3>
+
+            <p>Sans <code>by</code>, tu écrirais :</p>
+            <pre><code>val backStackEntryState = navController.currentBackStackEntryAsState()  // State&lt;NavBackStackEntry?&gt;
+val backStackEntry = backStackEntryState.value                          // NavBackStackEntry?</code></pre>
+
+            <p>Avec <code>by</code> :</p>
+            <pre><code>val backStackEntry by navController.currentBackStackEntryAsState()      // NavBackStackEntry?</code></pre>
+
+            <p>C'est exactement la même chose, mais <code>by</code> te fait sauter le <code>.value</code> à chaque accès. C'est ce qu'on appelle un <strong>property delegate</strong> Kotlin.</p>
+
+            <h4>Le rôle de l'import <code>getValue</code></h4>
+            <p>L'import <code>androidx.compose.runtime.getValue</code> en haut du fichier est précisément ce qui permet à <code>by</code> de fonctionner sur un <code>State&lt;T&gt;</code>. Sans cet import, le compilateur refuse le <code>by</code>. (Pour la version mutable avec <code>=</code>, on importe aussi <code>setValue</code>.)</p>
+
+            <div class="recap">
+                <p><strong>Règle simple</strong> :</p>
+                <ul>
+                    <li><code>= ...AsState()</code> → tu manipules <code>.value</code> à la main.</li>
+                    <li><code>by ...AsState()</code> → tu accèdes directement à la valeur, comme une variable normale.</li>
+                </ul>
+                <p>Dans 95% des cas en Compose, on utilise <code>by</code> — c'est plus lisible.</p>
+            </div>
+        </article>
+
+        <article class="entry" id="appcontainer-revisited">
+            <h3>Rappel : <code>AppContainer</code> — où il est, à quoi il sert</h3>
+
+            <p class="question">« <code>AppContainer</code> c'est quoi ? c'est où ? »</p>
+
+            <p>Cf. articles existants <a href="#appcontainer"><code>#appcontainer</code></a> et <a href="#smartnotesapp"><code>#smartnotesapp</code></a>. Récap concis pour la session debrief :</p>
+
+            <h4>Où ça se trouve</h4>
+            <ul>
+                <li><code>app/src/main/java/io/github/marievial2/smartnotes/di/AppContainer.kt</code> — le container lui-même (vide pour l'instant).</li>
+                <li><code>app/src/main/java/io/github/marievial2/smartnotes/SmartNotesApp.kt</code> — la classe <code>Application</code> qui le possède via <code>lateinit var container: AppContainer</code> avec <code>private set</code>.</li>
+                <li><code>AndroidManifest.xml</code> — déclare <code>android:name=".SmartNotesApp"</code> pour qu'Android utilise notre classe.</li>
+            </ul>
+
+            <h4>À quoi ça sert</h4>
+            <p>Une classe-coffre qui regroupera, à partir des étapes 5+, les <strong>ressources partagées</strong> de l'app : la base Room, les <code>Repository</code>, le <code>GeminiClient</code>… créées <strong>une seule fois</strong> au démarrage et accessibles à tous les écrans.</p>
+            <p>C'est ce qu'on appelle un <strong>conteneur d'injection de dépendances</strong> (d'où le dossier <code>di/</code> = <em>Dependency Injection</em>).</p>
+
+            <h4>Lien avec <code>MainActivity</code> aujourd'hui</h4>
+            <p><strong>Aucun pour l'instant</strong>. <code>MainActivity</code> n'utilise pas le container. Il est là, prêt, mais vide. Le lien viendra à l'étape 7 (création du <code>NoteRepository</code>).</p>
+
+            <div class="recap">
+                <p><strong>État actuel</strong> : un coffre-fort vide en attente d'être garni.</p>
+            </div>
+        </article>
+
+        <article class="entry" id="whitelist-vs-blacklist">
+            <h3>Whitelist vs blacklist : pourquoi <code>showBottomBar</code> liste les routes autorisées</h3>
+
+            <pre><code>val showBottomBar = currentRoute in listOf(
+    Routes.NOTES,
+    Routes.CATEGORIES,
+    Routes.TAGS
+)</code></pre>
+
+            <h4>L'opérateur <code>in</code></h4>
+            <p><code>in</code> est un opérateur Kotlin qui s'écrit comme en français : « est-ce que <code>currentRoute</code> est <strong>dans</strong> cette liste ? ». Il renvoie un <code>Boolean</code>. Équivalent de <code>listOf(...).contains(currentRoute)</code>.</p>
+
+            <p>Donc <code>showBottomBar</code> est <code>true</code> si on est sur Notes, Catégories ou Tags. Sinon <code>false</code> (Editor, ou écran inconnu, ou <code>null</code> au tout premier instant).</p>
+
+            <h4>Pourquoi une whitelist plutôt qu'une blacklist ?</h4>
+
+            <p>On aurait pu écrire l'inverse :</p>
+            <pre><code>// Blacklist (à éviter)
+val showBottomBar = currentRoute != Routes.EDITOR_NEW
+                 &amp;&amp; currentRoute != Routes.EDITOR_EDIT</code></pre>
+
+            <table>
+                <thead>
+                <tr><th>Approche</th><th>Comportement par défaut quand on ajoute un écran</th></tr>
+                </thead>
+                <tbody>
+                <tr><td><strong>Blacklist</strong></td><td>« Afficher PARTOUT, sauf sur Editor. » Demain, tu ajoutes <code>Settings</code>, <code>CategoryDetail</code>, <code>TagFilter</code> → la bottom bar y apparaîtra <strong>par erreur</strong>. Tu dois penser à les rajouter dans la blacklist.</td></tr>
+                <tr><td><strong>Whitelist (notre choix)</strong></td><td>« Afficher SEULEMENT sur ces 3 onglets racines. » Tu ajoutes un nouvel écran → la bottom bar <strong>n'y apparaît pas par défaut</strong>. Tu dois explicitement l'ajouter à la whitelist si tu le veux.</td></tr>
+                </tbody>
+            </table>
+
+            <div class="recap">
+                <p>La whitelist est <strong>plus sûre par défaut</strong>. Elle exprime clairement : « la bottom bar appartient aux trois onglets racines, point ». C'est l'esprit Material : la bottom nav est une nav <strong>de premier niveau</strong>, pas un truc qui traîne sur tous les écrans.</p>
+                <p><strong>Principe général</strong> : préférer une whitelist à une blacklist quand l'ajout d'un nouveau cas doit, par sécurité, exclure plutôt qu'inclure.</p>
+            </div>
+        </article>
+
+        <article class="entry" id="slot-lambda">
+            <h3>Slot Compose = lambda passé en paramètre</h3>
+
+            <pre><code>Scaffold(
+    modifier = Modifier.fillMaxSize(),
+    bottomBar = {
+        if (showBottomBar) {
+            AppBottomBar(navController, currentRoute)
+        }
+    }
+) { innerPadding -&gt; ... }</code></pre>
+
+            <p>Subtilité importante : <code>bottomBar</code> n'est <strong>pas</strong> un composable, c'est un <strong>paramètre</strong> auquel tu passes un <strong>lambda</strong> de type <code>@Composable () -&gt; Unit</code>.</p>
+
+            <h4>Pourquoi un lambda et pas une référence directe ?</h4>
+            <p>Parce que Compose veut le <strong>contrôle</strong> sur quand et où exécuter ton code de rendu. Tu lui donnes une « recette » (le lambda), et il l'exécute lui-même au bon moment, dans le bon contexte de mise en page (le slot du bas, avec les bonnes contraintes de taille). Il peut décider de la sauter, de la rejouer, etc.</p>
+
+            <h4>Le <code>if</code> à l'intérieur du lambda</h4>
+            <p>Si <code>showBottomBar</code> est <code>false</code>, le <code>if</code> ne fait rien → le lambda ne contient aucun composable → le slot <code>bottomBar</code> est <strong>effectivement vide</strong> → Scaffold n'occupe pas d'espace en bas → la bottom bar <strong>disparaît</strong>, et le contenu s'étend pour récupérer la place.</p>
+
+            <h4>Recompo automatique du slot</h4>
+            <p>Quand tu navigues vers Editor :</p>
+            <ol>
+                <li>La pile change, donc <code>backStackEntry</code> change (rappel : c'est un <code>State</code> observable, cf. <a href="#state-journal"><code>#state-journal</code></a>).</li>
+                <li><code>MainScreen</code> est recomposé.</li>
+                <li><code>currentRoute</code> recalcule à <code>"editor/new"</code>.</li>
+                <li><code>showBottomBar</code> recalcule à <code>false</code>.</li>
+                <li>Scaffold rejoue son slot <code>bottomBar</code> → cette fois le <code>if</code> est faux → vide.</li>
+                <li>La bottom bar disparaît visuellement.</li>
+            </ol>
+            <p>Tout ça <strong>sans une ligne de logique impérative</strong> (« masque la bottom bar »). Tu décris ce qui doit être affiché en fonction de l'état, et Compose fait la mise à jour. C'est le <strong>paradigme déclaratif</strong>.</p>
+
+            <blockquote class="warning">
+                <p><strong>À approfondir lors de la prochaine session</strong> : un cours dédié sur les <strong>lambdas Kotlin</strong> (syntaxe <code>{ x -&gt; ... }</code>, capture de variables, types <code>(T) -&gt; R</code>, lambdas annotées comme <code>@Composable</code>). Marie l'a explicitement demandé.</p>
+            </blockquote>
+        </article>
+
+        <article class="entry" id="trailing-lambda">
+            <h3>Le trailing lambda en Kotlin</h3>
+
+            <p>En Kotlin, quand le <strong>dernier</strong> paramètre d'une fonction est un lambda, tu peux le sortir des parenthèses. C'est ce qu'on appelle un <strong>trailing lambda</strong> (« lambda final »).</p>
+
+            <h4>La signature de <code>Scaffold</code> (simplifiée)</h4>
+            <pre><code>fun Scaffold(
+    modifier: Modifier,
+    topBar: @Composable () -&gt; Unit,
+    bottomBar: @Composable () -&gt; Unit,
+    ...,
+    content: @Composable (PaddingValues) -&gt; Unit  // ← dernier paramètre
+)</code></pre>
+
+            <h4>Les deux écritures équivalentes</h4>
+
+            <p>Sans trailing lambda (verbeux) :</p>
+            <pre><code>Scaffold(
+    modifier = Modifier.fillMaxSize(),
+    bottomBar = { ... },
+    content = { innerPadding -&gt; Box(...) { AppNavGraph(navController) } }
+)</code></pre>
+
+            <p>Avec trailing lambda (idiomatique) :</p>
+            <pre><code>Scaffold(
+    modifier = Modifier.fillMaxSize(),
+    bottomBar = { ... }
+) { innerPadding -&gt;
+    Box(...) { AppNavGraph(navController) }
+}</code></pre>
+
+            <p>Le bloc <code>{ innerPadding -&gt; ... }</code> qui suit la parenthèse fermante est <strong>le slot <code>content</code></strong>, sorti des parenthèses pour la lisibilité.</p>
+
+            <div class="recap">
+                <p>Tu reconnais un trailing lambda à <strong>une accolade ouvrante <code>{</code> qui suit immédiatement la parenthèse fermante <code>)</code></strong> d'un appel de fonction. Très courant en Compose et dans les builders Kotlin.</p>
+            </div>
+        </article>
+
+        <article class="entry" id="inner-padding">
+            <h3><code>innerPadding</code> et le <code>Box</code> wrapper</h3>
+
+            <pre><code>) { innerPadding -&gt;
+    Box(modifier = Modifier.padding(innerPadding)) {
+        AppNavGraph(navController)
+    }
+}</code></pre>
+
+            <h4><code>innerPadding: PaddingValues</code> — qu'est-ce que c'est ?</h4>
+            <p>Quand le Scaffold dessine sa bottom bar (mettons 80dp de haut), il sait que ton contenu <strong>ne doit pas passer dessous</strong> (sinon ton texte serait caché). Il calcule donc un <code>PaddingValues</code> qui contient ces marges (<code>top</code>, <code>bottom</code>, <code>start</code>, <code>end</code>) et te le <strong>donne en paramètre du slot content</strong>, à toi de l'appliquer à ta racine de contenu.</p>
+
+            <blockquote class="warning">
+                <p>Si tu <strong>oublies</strong> d'appliquer ce padding, ton contenu passera <strong>derrière</strong> la bottom bar (ou la status bar) — bug visuel classique.</p>
+            </blockquote>
+
+            <h4>Pourquoi un <code>Box</code> autour de <code>AppNavGraph</code> ?</h4>
+            <ul>
+                <li>Un <strong><code>Box</code></strong> est le composable de mise en page le plus simple : il empile ses enfants en superposition (z-order).</li>
+                <li>Ici on n'a qu'un enfant (<code>AppNavGraph</code>), donc le <code>Box</code> sert juste de <strong>support pour appliquer le <code>Modifier</code></strong>.</li>
+                <li>Tu pourrais te passer du <code>Box</code> et appliquer le modifier directement sur <code>AppNavGraph</code> si on lui ajoutait un paramètre <code>Modifier</code>, mais comme on ne lui en a pas mis, le <code>Box</code> est un wrapper commode.</li>
+            </ul>
+
+            <p>C'est une pratique courante : <em>« j'ai besoin d'appliquer un Modifier mais le composable enfant n'expose pas de paramètre Modifier → je l'enveloppe dans un Box. »</em></p>
+        </article>
+
+        <article class="entry" id="scaffold-parent-vs-screen">
+            <h3>Scaffold parent vs scaffold par écran</h3>
+
+            <p>Question : pourquoi un seul <code>Scaffold</code> dans <code>MainScreen</code> qui englobe le <code>NavHost</code>, plutôt qu'un <code>Scaffold</code> dans chaque écran ?</p>
+
+            <h4>Option A — Scaffold par écran</h4>
+            <p>Chaque écran (<code>NotesScreen</code>, <code>CategoriesScreen</code>, <code>TagsScreen</code>…) aurait son propre <code>Scaffold</code> avec sa propre bottom bar. La bottom bar serait alors <strong>à l'intérieur du NavHost</strong>.</p>
+
+            <h4>Option B — Scaffold parent (notre choix)</h4>
+            <p>Un seul <code>Scaffold</code> dans <code>MainScreen</code> englobe le <code>NavHost</code>. La bottom bar est <strong>en dehors du NavHost</strong>, frère du contenu, pas enfant.</p>
+
+            <h4>Côté animation de transition</h4>
+            <p>NavHost applique une animation par défaut (fondu/slide) <strong>sur ce qu'il contient</strong>.</p>
+            <ul>
+                <li><strong>Option A</strong> : la bottom bar est <em>dans</em> le NavHost → l'animation s'applique aussi à elle. Elle glisse avec l'écran qui sort, et la bottom bar du nouvel écran arrive avec lui. Visuellement : la bottom bar « tremble » ou fait un saut à chaque changement d'onglet. L'œil perçoit ça comme un glitch — il s'attend à un repère stable.</li>
+                <li><strong>Option B</strong> : la bottom bar est <em>en dehors</em> du NavHost → l'animation s'applique uniquement au contenu. La bottom bar reste <strong>parfaitement immobile</strong>, l'écran glisse <em>sous</em> elle. C'est l'effet « collée en bas » qu'on voit dans Gmail, YouTube, Instagram.</li>
+            </ul>
+
+            <h4>Côté Compose / recomposition</h4>
+            <p>Recomposition ≠ destruction. Quand <code>currentRoute</code> change :</p>
+            <ul>
+                <li><strong>Option B</strong> : <code>AppBottomBar</code> est le <strong>même nœud</strong> dans l'arbre Compose. Il est <em>recomposé</em> avec le nouveau <code>currentRoute</code>, mais l'instance reste. Compose retrouve le nœud à la même position et lui passe les nouveaux paramètres. Coût minimal.</li>
+                <li><strong>Option A</strong> : la bottom bar est dans l'écran qui sort → cet écran est <em>démonté</em> (sortie de la pile/animation). La bottom bar de cet écran est détruite. Celle du nouvel écran est <em>montée</em> (création de nouveaux nœuds Compose). Coût plus élevé, et surtout : impossible de garder un état dans la bottom bar entre deux écrans (puisqu'elle est recréée).</li>
+            </ul>
+
+            <h4>Côté code</h4>
+            <ul>
+                <li><strong>Option A</strong> : code de la bottom bar dupliqué dans chaque écran (DRY violé), ou bien factorisé dans un composable réutilisable mais appelé partout.</li>
+                <li><strong>Option B</strong> : un seul appel à <code>AppBottomBar</code>, dans <code>MainScreen</code>. La logique de visibilité (whitelist <code>showBottomBar</code>) est centralisée au même endroit.</li>
+            </ul>
+
+            <div class="recap">
+                <p><strong>Pattern Material recommandé : Scaffold parent.</strong> La bottom bar est un repère stable de l'app, pas un élément d'écran. Elle vit donc <em>au-dessus</em> du NavHost dans l'arbre Compose, et survit aux navigations.</p>
+            </div>
+        </article>
+
+    </section>
+
+    <section class="session" id="session-2026-05-08">
+        <div class="session-header">
+            <h2>2026-05-08 — Syntaxe d'un composable <span class="date">— pause avant le cours sur les lambdas</span></h2>
+        </div>
+
+        <article class="entry" id="composable-syntax">
+            <h3>Anatomie d'un appel composable : parenthèses et accolades</h3>
+
+            <p>Quand tu vois <code>Scaffold(...) { ... }</code>, <code>Box { ... }</code>, <code>Text("Bonjour")</code>, tu vois toujours la même chose : <strong>un appel de fonction Kotlin</strong>. Décortiquons la syntaxe une fois pour toutes.</p>
+
+            <h4>Un composable, c'est une fonction Kotlin annotée</h4>
+            <pre><code>@Composable
+fun MonComposable(param1: Type1, param2: Type2) {
+    // corps
+}</code></pre>
+            <p>L'annotation <code>@Composable</code> dit au compilateur Compose : <em>« cette fonction participe au système de recomposition »</em>. Mais à part ça, c'est une <strong>fonction Kotlin normale</strong>. Tu l'appelles comme une fonction normale :</p>
+            <pre><code>MonComposable(valeur1, valeur2)</code></pre>
+
+            <h4>Entre les parenthèses : les arguments</h4>
+            <p>Comme pour n'importe quelle fonction Kotlin. On y met les valeurs que la fonction attend, dans l'ordre déclaré, ou avec leur nom (paramètres nommés). En Compose, on retrouve typiquement quatre familles d'arguments :</p>
+            <ul>
+                <li><strong>Données à afficher</strong> : <code>Text(text = "Bonjour")</code>, <code>Icon(imageVector = Icons.Filled.Folder)</code>.</li>
+                <li><strong>Modifier</strong> : <code>Modifier.fillMaxSize()</code>, <code>Modifier.padding(8.dp)</code> — taille, placement, décorations (cf. article <a href="#modifier"><code>#modifier</code></a>).</li>
+                <li><strong>Callbacks (lambdas)</strong> : <code>onClick = { ... }</code>, <code>onValueChange = { newText -> ... }</code> — <em>« quand l'utilisateur fait X, exécute ça »</em>.</li>
+                <li><strong>Slot lambdas</strong> : <code>bottomBar = { ... }</code>, <code>icon = { ... }</code>, <code>label = { ... }</code> — <em>« voici ce que tu dois afficher dans cette zone »</em> (cf. article <a href="#slot-lambda"><code>#slot-lambda</code></a>).</li>
+            </ul>
+
+            <blockquote class="note">
+                <p>Une lambda (<code>{ ... }</code>) est un argument <strong>comme un autre</strong>. Tu pourrais tout mettre entre parenthèses :</p>
+                <pre><code>Scaffold(modifier = Modifier.fillMaxSize(), bottomBar = { AppBottomBar(...) }, content = { padding -> ... })</code></pre>
+                <p>C'est valide. Juste illisible.</p>
+            </blockquote>
+
+            <h4>Entre les accolades qui suivent : le sucre syntaxique « trailing lambda »</h4>
+            <p>Kotlin a une règle générale (pas spécifique à Compose) : <strong>si le dernier paramètre d'une fonction est une lambda, tu peux la sortir des parenthèses</strong>.</p>
+            <pre><code>// Avec tout dans les parenthèses :
+Scaffold(modifier = ..., bottomBar = { ... }, content = { padding -&gt; ... })
+
+// Avec la trailing lambda sortie :
+Scaffold(modifier = ..., bottomBar = { ... }) { padding -&gt;
+    // ce qui était dans content = { ... }
+}</code></pre>
+            <p>Et si la lambda est le <strong>seul</strong> paramètre, tu peux même <em>vider les parenthèses</em> :</p>
+            <pre><code>Box {
+    Text("dans le box")
+}
+// strictement équivalent à :
+Box(content = { Text("dans le box") })</code></pre>
+
+            <h4>Pourquoi c'est massivement utilisé en Compose</h4>
+            <p>Parce que la <strong>plupart des composables containers</strong> (<code>Box</code>, <code>Column</code>, <code>Row</code>, <code>Card</code>, <code>Scaffold</code>, <code>Surface</code>, <code>Button</code>…) ont comme <strong>dernier paramètre</strong> <code>content: @Composable () -&gt; Unit</code> — <em>« la fonction qui décrit ce qui est à l'intérieur »</em>.</p>
+            <p>Du coup les arbres Compose deviennent visuels :</p>
+            <pre><code>Column {
+    Text("titre")
+    Row {
+        Icon(...)
+        Text("sous-texte")
+    }
+    Button(onClick = { ... }) {
+        Text("Valider")
+    }
+}</code></pre>
+            <p>Visuellement, <strong>les accolades dessinent l'arbre</strong>. Mais sous le capot c'est toujours : <em>« passe une lambda comme dernier argument »</em>.</p>
+
+            <h4>Récap appliqué à notre <code>Scaffold</code> de <code>MainScreen</code></h4>
+            <pre><code>Scaffold(
+    modifier = Modifier.fillMaxSize(),     // arg classique
+    bottomBar = {                          // arg lambda (slot, dans les parens)
+        if (showBottomBar) AppBottomBar(...)
+    }
+) { innerPadding -&gt;                       // dernier arg lambda, sorti en trailing
+    Box(modifier = Modifier.padding(innerPadding)) {
+        AppNavGraph(navController)
+    }
+}</code></pre>
+            <ul>
+                <li>Les parenthèses contiennent <strong>deux arguments</strong> : <code>modifier</code> et <code>bottomBar</code>.</li>
+                <li>Le <strong>troisième argument</strong> (<code>content</code>) est sorti en trailing lambda — c'est le <code>{ innerPadding -&gt; ... }</code>.</li>
+                <li>Le <code>innerPadding -&gt;</code> indique que cette lambda <strong>reçoit un paramètre</strong> (le <code>PaddingValues</code> que Scaffold lui passe).</li>
+            </ul>
+
+            <div class="recap">
+                <p><strong>En une phrase :</strong> parenthèses = arguments classiques ; accolades qui suivent = le dernier argument de type lambda, sorti pour la lisibilité. Et c'est tout.</p>
+            </div>
+
+            <blockquote class="note">
+                <p><strong>À la prochaine session</strong> : on reprendra cette syntaxe en parallèle du <a href="#lambdas-kotlin">cours dédié sur les lambdas Kotlin</a> (à venir) — les slots, callbacks et trailing lambdas seront alors complètement démystifiés.</p>
+            </blockquote>
+        </article>
+
+    </section>
+
+    <footer>
+        Cahier généré au fil des sessions. Pour ajouter une entrée, demande à Claude « ajoute X au cours.html ».
+    </footer>
+
+</div>
+
+<a href="#top" class="back-to-top" aria-label="Retour en haut" title="Retour en haut">↑</a>
+
+<script>
+    (function () {
+        const backTop = document.querySelector('.back-to-top');
+        const links = Array.from(document.querySelectorAll('.sidebar-toc a[href^="#"]'));
+        const sections = links
+            .map(a => document.getElementById(a.getAttribute('href').slice(1)))
+            .filter(Boolean);
+
+        function onScroll() {
+            const y = window.scrollY;
+            backTop.classList.toggle('visible', y > 400);
+
+            let currentId = '';
+            const probe = y + 120;
+            for (const s of sections) {
+                if (s.offsetTop <= probe) currentId = s.id;
+                else break;
+            }
+            for (const a of links) {
+                a.classList.toggle('active', a.getAttribute('href') === '#' + currentId);
+            }
+        }
+
+        window.addEventListener('scroll', onScroll, { passive: true });
+        onScroll();
+    })();
+</script>
+
+</body>
+</html>
