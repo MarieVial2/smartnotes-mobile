@@ -76,7 +76,7 @@ private fun MainScreen() {
     }
 }
 
-
+//Données ici donc data class plutot que class
 private data class TabItem(
     val route: String,
     val label: String,
@@ -84,7 +84,6 @@ private data class TabItem(
 )
 
 
-//Code généré par l'IA à étudier
 @Composable
 private fun AppBottomBar(
     navController: NavHostController,
@@ -99,11 +98,16 @@ private fun AppBottomBar(
     NavigationBar {
         tabs.forEach { tab ->
             NavigationBarItem(
+                //argument nommé, pas initialisation:
                 selected = currentRoute == tab.route,
+                //au lieu de selected = if(currentRoute == tab.route) {true}else false;
                 onClick = {
                     navController.navigate(tab.route) {
+                        // effacer la pile, accueil seulement reste (1 clic de l'accueil). On garde quand meme l'état de l'onglet ouvert
                         popUpTo(Routes.CATEGORIES) { saveState = true }
+                        //on garde l'instance en cas de tap de l'onglet deja ouvert
                         launchSingleTop = true
+                        //on restaure l'état (scroll, texte..) si on l'avait stocké plus haut :
                         restoreState = true
                     }
                 },

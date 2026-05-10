@@ -464,6 +464,16 @@
                     <li><a href="#lambda-innerpadding">Application : la lambda <code>{ innerPadding -&gt; … }</code> du Scaffold</a></li>
                 </ul>
             </li>
+            <li><a href="#session-2026-05-10">2026-05-10 (debrief 3 — bloc 3) — <code>AppBottomBar</code> : <code>data class</code>, stdlib, pattern de nav</a>
+                <ul>
+                    <li><a href="#data-class-vs-class">Pourquoi <code>data class</code> ? — vs <code>class</code> normale, vs liste</a></li>
+                    <li><a href="#stdlib-kotlin">La bibliothèque standard Kotlin (stdlib)</a></li>
+                    <li><a href="#foreach-fonction"><code>forEach</code> est une fonction, pas un mot-clé</a></li>
+                    <li><a href="#named-arguments-eval">Arguments nommés et évaluation d'expression</a></li>
+                    <li><a href="#nav-pattern-scenario">Pattern de navigation : les 3 bugs sans le pattern, la pile avec</a></li>
+                    <li><a href="#box-column-row"><code>Box</code> vs <code>Column</code> vs <code>Row</code> — pourquoi mes textes se chevauchent</a></li>
+                </ul>
+            </li>
         </ul>
 </nav>
 
@@ -2411,6 +2421,357 @@ nombres.map { x -&gt; x * 2 }</code></pre>
             <div class="recap">
                 <p><strong>En une phrase :</strong> le <code>innerPadding -&gt;</code> n'est <strong>pas</strong> une variable que toi tu remplis. C'est <strong>un trou que tu prévois pour que Scaffold t'envoie quelque chose</strong>. La lambda dit : <em>« quand tu m'appelleras, tu me donneras un <code>PaddingValues</code>, et je l'appellerai <code>innerPadding</code> »</em>. Tu fais ensuite ce que tu veux avec — ici, tu l'appliques en padding sur un <code>Box</code> pour que le contenu respecte la zone de la <code>bottomBar</code>.</p>
                 <p>Même mécanique que <code>nombres.map { x -&gt; x * 2 }</code> : <code>map</code> te passe chaque élément, tu le récupères dans <code>x</code>, tu fais ton calcul. Sauf qu'ici, le « truc passé » est un <code>PaddingValues</code>, et le « calcul » est de dessiner ton arborescence Compose.</p>
+            </div>
+        </article>
+
+    </section>
+
+    <section class="session" id="session-2026-05-10">
+        <div class="session-header">
+            <h2>Debrief MainActivity — bloc 3 (<code>AppBottomBar</code>) <span class="date">— 2026-05-10</span></h2>
+        </div>
+
+        <p>Reprise du debrief de l'étape 3.5. Après les blocs 1, 2A et 2B (sessions précédentes) + le cours dédié <a href="#lambdas-kotlin">lambdas Kotlin</a>, on attaque le bloc 3 : la barre du bas elle-même. Cette session couvre 5 concepts qui apparaissent en lisant <code>AppBottomBar</code> ligne par ligne.</p>
+
+        <article class="entry" id="data-class-vs-class">
+            <h3>Pourquoi <code>data class</code> ? — vs <code>class</code> normale, vs liste</h3>
+
+            <p class="question">« Pourquoi utiliser une <code>data class</code> ici, et pas une classe normale ou un simple tableau ? »</p>
+
+            <p>Dans <code>AppBottomBar</code>, on déclare :</p>
+
+            <pre><code>private data class TabItem(
+    val route: String,
+    val label: String,
+    val icon: ImageVector
+)</code></pre>
+
+            <p>Cette <code>data class</code> sert à <strong>décrire un onglet</strong> de la bottom bar (sa route, son label affiché, son icône). Ce n'est <strong>pas</strong> un composable : elle ne dessine rien. C'est un <em>sac de données</em> figé. C'est <code>NavigationBarItem</code> (le composable Material 3) qui lira ensuite cette fiche et la transformera en bouton cliquable.</p>
+
+            <blockquote>
+                <p><strong>Analogie</strong> : la <code>data class</code> c'est la <strong>carte plastifiée</strong> du restaurant (« Pizza margherita — 12€ — photo de pizza »), description figée. Le composable <code>NavigationBarItem</code>, c'est le <strong>serveur</strong> qui lit la carte et apporte la pizza. La carte ne cuisine pas elle-même.</p>
+            </blockquote>
+
+            <h4>Trois options possibles, et pourquoi <code>data class</code> gagne</h4>
+
+            <h5>Option A — <code>class</code> normale</h5>
+            <pre><code>class TabItem(val route: String, val label: String, val icon: ImageVector)</code></pre>
+            <p>Ça <strong>marche</strong>. Tu peux écrire <code>TabItem("notes", "Notes", icon)</code>, lire <code>tab.route</code>, etc. Mais une <code>class</code> nue te donne le strict minimum :</p>
+
+            <pre><code>val a = TabItem("notes", "Notes", icon1)
+val b = TabItem("notes", "Notes", icon1)
+println(a == b)   // false  ← même contenu, mais Kotlin compare les adresses mémoire
+println(a)        // TabItem@3a4f5b6c  ← illisible (adresse mémoire)</code></pre>
+
+            <p>Pour rendre <code>==</code> et <code>toString</code> corrects, il faudrait écrire <code>equals</code>, <code>hashCode</code>, <code>toString</code> à la main — boilerplate ennuyeux.</p>
+
+            <h5>Option B — <code>data class</code> (ce qu'on a)</h5>
+            <p>Le mot-clé <code>data</code> dit au compilateur Kotlin : <em>« c'est une donnée pure, génère-moi gratuitement les méthodes utilitaires »</em>. Tu obtiens <strong>sans rien écrire</strong> :</p>
+
+            <table>
+                <thead>
+                <tr><th>Méthode auto-générée</th><th>Ce que ça fait</th></tr>
+                </thead>
+                <tbody>
+                <tr><td><code>equals</code></td><td>Compare <strong>les champs</strong>, plus les adresses → <code>a == b</code> est <code>true</code> si tous les champs sont égaux.</td></tr>
+                <tr><td><code>hashCode</code></td><td>Cohérent avec <code>equals</code> (indispensable pour <code>Set</code>, <code>Map</code>).</td></tr>
+                <tr><td><code>toString</code></td><td>Lisible : <code>TabItem(route=notes, label=Notes, icon=…)</code>.</td></tr>
+                <tr><td><code>copy()</code></td><td>Cloner en changeant un champ : <code>tab.copy(label = "Mes notes")</code>.</td></tr>
+                <tr><td><code>componentN()</code></td><td>Déstructuration : <code>val (route, label, icon) = tab</code>.</td></tr>
+                </tbody>
+            </table>
+
+            <p>Dans <code>AppBottomBar</code> précisément, on n'utilise <em>aucune</em> de ces méthodes. Une <code>class</code> normale aurait techniquement suffi. <strong>Mais</strong> la convention Kotlin est : <em>« si la classe ne sert qu'à porter des données, écris toujours <code>data class</code> »</em>. C'est devenu le réflexe, ça <strong>documente l'intention</strong> (« ceci est une donnée, pas un comportement ») et ça coûte 4 lettres.</p>
+
+            <h5>Option C — un tableau / une liste à plat (anti-pattern)</h5>
+            <pre><code>val tabs = listOf(
+    listOf("notes", "Notes", Icons.Filled.Description),
+    listOf("categories", "Catégories", Icons.Filled.Folder),
+    listOf("tags", "Tags", Icons.Filled.Label)
+)
+
+tabs.forEach { tab -&gt;
+    NavigationBarItem(
+        selected = currentRoute == tab[0],   // 🤢
+        icon = { Icon(tab[2], ...) },         // 🤢🤢
+        label = { Text(tab[1]) }              // wait, c'était l'index 1 ou 2 le label ?
+    )
+}</code></pre>
+
+            <table>
+                <thead>
+                <tr><th>Problème</th><th>Pourquoi c'est grave</th></tr>
+                </thead>
+                <tbody>
+                <tr><td><strong>Pas de noms</strong></td><td><code>tab[0]</code> / <code>tab[1]</code> / <code>tab[2]</code> — il faut <em>se souvenir</em> de quel index correspond à quoi. Tu reviens dessus dans 2 mois, tu galères.</td></tr>
+                <tr><td><strong>Pas de typage par champ</strong></td><td><code>listOf("notes", "Notes", icon)</code> mélange <code>String</code> et <code>ImageVector</code> → Kotlin infère <code>List&lt;Any&gt;</code>. Plus de garantie de type, casts pourris partout.</td></tr>
+                <tr><td><strong>Erreurs silencieuses</strong></td><td>Si tu inverses 2 strings à la création, le compilateur ne dit <strong>rien</strong>. Bug à l'exécution. Avec <code>data class</code>, tu nommes : <code>TabItem(route=…, label=…, icon=…)</code>.</td></tr>
+                <tr><td><strong>Pas d'autocomplétion</strong></td><td>Tape <code>tab.</code> dans Android Studio avec <code>data class</code> → l'IDE propose <code>route</code>, <code>label</code>, <code>icon</code>. Avec une liste → rien.</td></tr>
+                </tbody>
+            </table>
+
+            <h4>Récapitulatif</h4>
+
+            <table>
+                <thead>
+                <tr><th>Critère</th><th><code>data class</code></th><th><code>class</code> normale</th><th>Liste/tableau</th></tr>
+                </thead>
+                <tbody>
+                <tr><td>Champs nommés</td><td>✅</td><td>✅</td><td>❌</td></tr>
+                <tr><td>Typage strict par champ</td><td>✅</td><td>✅</td><td>❌ (<code>Any</code>)</td></tr>
+                <tr><td><code>equals</code> / <code>toString</code> / <code>copy</code> gratuits</td><td>✅</td><td>❌ à écrire</td><td>❌</td></tr>
+                <tr><td>Convention Kotlin pour des données</td><td>✅ idiomatique</td><td>⚠️ nu sans raison</td><td>❌ anti-pattern</td></tr>
+                <tr><td>Autocomplétion IDE</td><td>✅</td><td>✅</td><td>❌</td></tr>
+                </tbody>
+            </table>
+
+            <div class="recap">
+                <p><strong>À retenir</strong> : <em>« quand mes champs ont un sens individuel, je crée une <code>data class</code> ».</em> C'est l'équivalent moderne d'un <code>struct</code> (C), <code>record</code> (Java moderne), <code>@dataclass</code> (Python). Réflexe à automatiser pour toute donnée pure.</p>
+            </div>
+        </article>
+
+        <article class="entry" id="stdlib-kotlin">
+            <h3>La bibliothèque standard Kotlin (stdlib)</h3>
+
+            <p class="question">« Tu parles de stdlib, de quoi parles-tu ? »</p>
+
+            <p><strong>stdlib</strong> = <em>standard library</em> = <strong>bibliothèque standard</strong>. C'est un paquet de classes et de fonctions <strong>livrées avec Kotlin par défaut</strong>, qu'on peut utiliser sans rien installer. Tu en utilises déjà tous les jours sans le savoir.</p>
+
+            <table>
+                <thead>
+                <tr><th>Catégorie</th><th>Exemples</th></tr>
+                </thead>
+                <tbody>
+                <tr><td>Types de base</td><td><code>String</code>, <code>Int</code>, <code>Boolean</code>, <code>List</code>, <code>Map</code>, <code>Set</code></td></tr>
+                <tr><td>Fonctions sur les collections</td><td><code>forEach</code>, <code>map</code>, <code>filter</code>, <code>first</code>, <code>sumOf</code>, <code>groupBy</code></td></tr>
+                <tr><td>Utilitaires de scope</td><td><code>let</code>, <code>also</code>, <code>apply</code>, <code>run</code>, <code>with</code></td></tr>
+                <tr><td>Fonctions globales</td><td><code>println</code>, <code>listOf</code>, <code>mapOf</code>, <code>require</code>, <code>check</code></td></tr>
+                </tbody>
+            </table>
+
+            <blockquote>
+                <p><strong>Analogie cross-langages</strong> : c'est comme les <strong>fonctions natives</strong> de JavaScript (<code>Array.forEach</code>, <code>Math.max</code>, <code>JSON.parse</code>) ou les <strong>builtins</strong> de Python (<code>len</code>, <code>range</code>, <code>list</code>) — disponibles partout sans <code>import</code>, parce qu'elles font partie du langage.</p>
+            </blockquote>
+
+            <p>Pas besoin d'ajouter de dépendance Gradle pour la stdlib. Quand tu écris <code>tabs.forEach { … }</code>, c'est de la stdlib. Quand tu écris <code>currentRoute in listOf(…)</code>, c'est de la stdlib. Quand tu écris <code>"hello".uppercase()</code>, c'est de la stdlib.</p>
+        </article>
+
+        <article class="entry" id="foreach-fonction">
+            <h3><code>forEach</code> est une fonction, pas un mot-clé</h3>
+
+            <p class="question">« <code>forEach</code>, c'est quoi exactement ? Un mot-clé Compose ? Du Kotlin ? »</p>
+
+            <p>Réflexe utile : si quelque chose est suivi de parenthèses ou d'accolades en Kotlin, c'est <strong>presque toujours une fonction</strong>, pas un mot-clé. <code>forEach</code> n'est pas de la magie Compose. C'est une <strong>fonction normale</strong> définie dans la stdlib Kotlin (cf. <a href="#stdlib-kotlin">article précédent</a>), sur tous les objets de type <code>Iterable&lt;T&gt;</code> (ce qui inclut les listes).</p>
+
+            <h4>Sa signature simplifiée</h4>
+
+            <pre><code>fun &lt;T&gt; Iterable&lt;T&gt;.forEach(action: (T) -&gt; Unit)</code></pre>
+
+            <p>Décortiquage :</p>
+            <ul>
+                <li><code>&lt;T&gt;</code> : c'est une <strong>fonction générique</strong>, elle marche pour n'importe quel type d'élément (<code>Int</code>, <code>String</code>, <code>TabItem</code>…).</li>
+                <li><code>Iterable&lt;T&gt;.forEach</code> : c'est une <strong>fonction d'extension</strong>. Le préfixe <code>Iterable&lt;T&gt;.</code> dit <em>« j'ajoute cette fonction à tout objet de type <code>Iterable&lt;T&gt;</code> »</em>. C'est pour ça qu'on l'appelle avec un point : <code>tabs.forEach(…)</code>.</li>
+                <li><code>action: (T) -&gt; Unit</code> : son seul paramètre est une <strong>lambda</strong> (cf. <a href="#lambdas-kotlin">cours du 2026-05-09</a>) qui prend un élément et ne renvoie rien d'utile (<code>Unit</code>).</li>
+            </ul>
+
+            <h4>Son corps</h4>
+
+            <pre><code>for (item in this) {
+    action(item)
+}</code></pre>
+
+            <p>C'est juste une boucle <code>for</code> qui appelle ta lambda pour chaque élément. Rien de plus.</p>
+
+            <h4>Équivalence avec une boucle <code>for</code></h4>
+
+            <pre><code>// Version forEach
+tabs.forEach { tab -&gt;
+    NavigationBarItem(...)
+}
+
+// Strictement équivalent
+for (tab in tabs) {
+    NavigationBarItem(...)
+}</code></pre>
+
+            <p>Les deux marchent. La version <code>forEach</code> est juste plus <em>fluide</em> et <strong>se chaîne</strong> mieux avec d'autres fonctions de la stdlib (<code>tabs.filter { … }.forEach { … }</code>). C'est l'écriture idiomatique Kotlin.</p>
+
+            <h4>Côté Compose</h4>
+
+            <p>Ça ne change rien. Compose voit juste 3 appels à <code>NavigationBarItem</code>, peu importe que tu aies utilisé <code>for</code> ou <code>forEach</code>. À chaque recomposition de <code>AppBottomBar</code>, <code>forEach</code> reboucle 3 fois et redemande à Compose 3 <code>NavigationBarItem</code>. Compose voit que ce sont les mêmes nœuds aux mêmes positions et <strong>réutilise</strong> les mêmes objets en ne mettant à jour que ce qui a changé (typiquement <code>selected</code>) — c'est le <em>smart recomposition</em>, on y reviendra.</p>
+
+            <div class="recap">
+                <p><strong>Deux niveaux d'appels à distinguer</strong> :</p>
+                <ul>
+                    <li><code>AppBottomBar(...)</code> est appelée par <strong>Compose</strong>, 1 fois par recomposition.</li>
+                    <li><code>{ tab -&gt; ... }</code> est appelée par <strong>la fonction <code>forEach</code></strong>, 3 fois (une par élément de <code>tabs</code>) à chaque appel de <code>AppBottomBar</code>.</li>
+                </ul>
+            </div>
+        </article>
+
+        <article class="entry" id="named-arguments-eval">
+            <h3>Arguments nommés et évaluation d'expression</h3>
+
+            <p class="question">« Reprends-moi la syntaxe <code>selected = currentRoute == tab.route</code> »</p>
+
+            <p>Cette ligne contient <strong>deux choses différentes</strong> qu'il faut bien séparer dans sa tête :</p>
+
+            <pre><code>selected   =   currentRoute == tab.route
+   │       │            │
+   │       │            └── une expression de comparaison (renvoie un Boolean)
+   │       │
+   │       └── PAS une affectation — c'est un argument nommé d'appel de fonction
+   │
+   └── nom du paramètre du composable NavigationBarItem</code></pre>
+
+            <h4>1) Le <code>=</code> à gauche : argument nommé</h4>
+
+            <p>Ce <code>=</code> n'est <strong>pas</strong> une affectation de variable. C'est la syntaxe Kotlin pour dire au compilateur <em>« le paramètre qui s'appelle <code>selected</code>, je lui passe <strong>cette</strong> valeur »</em> :</p>
+
+            <pre><code>NavigationBarItem(
+    selected = ...,   // paramètre "selected" reçoit ...
+    onClick  = ...,   // paramètre "onClick" reçoit ...
+    icon     = ...,   // etc.
+    label    = ...
+)</code></pre>
+
+            <p>Sans les noms, il faudrait passer dans le bon ordre et ce serait illisible (<code>NavigationBarItem(true, { … }, { … }, { … })</code> — bonne chance pour relire). Avec les noms, c'est explicite et tu peux les mettre dans n'importe quel ordre.</p>
+
+            <h4>2) Le <code>==</code> à droite : comparaison</h4>
+
+            <p><code>currentRoute == tab.route</code> est une <strong>expression</strong> qui s'évalue en <code>true</code> ou <code>false</code>.</p>
+
+            <blockquote>
+                <p><strong>Important</strong> : <code>==</code> en Kotlin = comparaison de <strong>valeur</strong> (équivalent <code>.equals()</code> en Java). C'est ce que tu veux dans 99% des cas. Pour comparer les <strong>références mémoire</strong> (rare), il existe <code>===</code>.</p>
+            </blockquote>
+
+            <h4>3) L'ordre d'évaluation à l'exécution</h4>
+
+            <ol>
+                <li>Kotlin évalue <strong>d'abord</strong> l'expression à droite : <code>currentRoute == tab.route</code> → <code>true</code> ou <code>false</code>.</li>
+                <li>Kotlin passe <strong>ensuite</strong> ce <code>Boolean</code> au paramètre <code>selected</code>.</li>
+            </ol>
+
+            <p>Dit autrement : <code>selected</code> reçoit toujours un <code>Boolean</code> pur (<code>true</code> ou <code>false</code>), pas l'expression elle-même. Le composable <code>NavigationBarItem</code> ne sait rien de <code>currentRoute</code> ou <code>tab.route</code> ; il reçoit juste <em>« suis-je sélectionné ou pas »</em>.</p>
+
+            <h4>Exemple concret — utilisateur sur l'écran Catégories</h4>
+
+            <table>
+                <thead>
+                <tr><th>Tour</th><th><code>tab.route</code></th><th>Évaluation</th><th>Valeur passée à <code>selected</code></th><th>Rendu</th></tr>
+                </thead>
+                <tbody>
+                <tr><td>1</td><td><code>"notes"</code></td><td><code>"categories" == "notes"</code></td><td><code>false</code></td><td>onglet Notes en gris</td></tr>
+                <tr><td>2</td><td><code>"categories"</code></td><td><code>"categories" == "categories"</code></td><td><code>true</code></td><td>onglet Catégories en couleur primaire</td></tr>
+                <tr><td>3</td><td><code>"tags"</code></td><td><code>"categories" == "tags"</code></td><td><code>false</code></td><td>onglet Tags en gris</td></tr>
+                </tbody>
+            </table>
+
+            <p>Et c'est cette valeur <code>Boolean</code> que <code>NavigationBarItem</code> utilise pour décider s'il dessine l'item en mode <em>actif</em> (couleur primaire, fond) ou <em>inactif</em> (gris).</p>
+        </article>
+
+        <article class="entry" id="nav-pattern-scenario">
+            <h3>Pattern de navigation : les 3 bugs sans le pattern, la pile avec</h3>
+
+            <p class="question">« Pourquoi 3 options sur <code>navigate(...)</code> au lieu d'un appel tout court ? »</p>
+
+            <p>Le code dans <code>AppBottomBar</code> :</p>
+
+            <pre><code>onClick = {
+    navController.navigate(tab.route) {
+        popUpTo(Routes.CATEGORIES) { saveState = true }
+        launchSingleTop = true
+        restoreState = true
+    }
+}</code></pre>
+
+            <p>L'article <a href="#bottom-nav-pattern">NavigationBar Material 3 et le pattern bottom nav officiel</a> donne déjà le tableau récap des 3 options. Cette entrée complète avec un <strong>scénario chiffré</strong> qui montre concrètement les bugs sans le pattern, puis le comportement avec.</p>
+
+            <h4>Rappel : la pile de navigation</h4>
+
+            <p>Cf. <a href="#nav-stack">la pile de navigation</a>. <code>navController</code> gère une <strong>pile de destinations</strong> (analogie pile d'assiettes). Quand on <code>navigate("notes")</code>, on <strong>empile</strong> une nouvelle assiette <code>notes</code> au-dessus. Le bouton retour Android <strong>dépile</strong>.</p>
+
+            <h4>Scénario sans options (<code>navigate(tab.route)</code> tout sec)</h4>
+
+            <p>Imaginons qu'on écrive juste :</p>
+
+            <pre><code>onClick = {
+    navController.navigate(tab.route)   // sans aucune option
+}</code></pre>
+
+            <p>L'utilisateur fait : démarrage app → Catégories (start destination) → tape <strong>Notes</strong> → tape <strong>Tags</strong> → tape <strong>Notes</strong> → tape <strong>Catégories</strong> → tape <strong>Notes</strong>.</p>
+
+            <table>
+                <thead>
+                <tr><th>Étape</th><th>Action</th><th>Pile (du bas vers le haut)</th></tr>
+                </thead>
+                <tbody>
+                <tr><td>0</td><td>Démarrage app</td><td><code>[Catégories]</code></td></tr>
+                <tr><td>1</td><td>Tap <strong>Notes</strong></td><td><code>[Catégories, Notes]</code></td></tr>
+                <tr><td>2</td><td>Tap <strong>Tags</strong></td><td><code>[Catégories, Notes, Tags]</code></td></tr>
+                <tr><td>3</td><td>Tap <strong>Notes</strong></td><td><code>[Catégories, Notes, Tags, Notes]</code></td></tr>
+                <tr><td>4</td><td>Tap <strong>Catégories</strong></td><td><code>[Catégories, Notes, Tags, Notes, Catégories]</code></td></tr>
+                <tr><td>5</td><td>Tap <strong>Notes</strong></td><td><code>[Catégories, Notes, Tags, Notes, Catégories, Notes]</code></td></tr>
+                </tbody>
+            </table>
+
+            <p><strong>6 entrées dans la pile pour 5 taps</strong>. Trois bugs en cascade.</p>
+
+            <h5>Bug 1 — Le bouton retour Android devient infernal</h5>
+            <p>L'utilisateur a juste papillonné entre 3 onglets. Pour fermer l'app, il faut taper retour <strong>5 fois</strong> (dépiler <code>Notes → Catégories → Notes → Tags → Notes → Catégories → app fermée</code>).</p>
+            <p>Comportement attendu sur Android : depuis n'importe quel onglet, <strong>un seul retour</strong> doit ramener à l'onglet d'accueil (ou fermer l'app si on y est déjà).</p>
+
+            <h5>Bug 2 — État de l'onglet perdu</h5>
+            <p>L'utilisateur scrollait dans la liste de Notes, position 850. Il tape Tags, puis re-tape Notes pour revenir. <strong>Surprise</strong> : <code>navigate("notes")</code> empile une <strong>nouvelle</strong> instance vierge de <code>NotesScreen</code>. Scroll perdu, recherche en cours perdue, filtres réinitialisés.</p>
+
+            <h5>Bug 3 — Empilement de doublons</h5>
+            <p>Dans la pile ci-dessus : <code>Notes</code> apparaît <strong>3 fois</strong>. Si l'utilisateur tape compulsivement le même onglet, on accumule des instances identiques. Mémoire gaspillée, comportement bizarre au retour.</p>
+
+            <h4>La solution : 3 options sur <code>navigate</code>, chacune corrige un bug</h4>
+
+            <h5><code>popUpTo(Routes.CATEGORIES) { saveState = true }</code></h5>
+            <p><em>« Avant de pousser la nouvelle destination, <strong>dépile</strong> tout jusqu'à <code>Routes.CATEGORIES</code> inclus. Et <strong>sauvegarde</strong> l'état de ce qu'on a viré. »</em></p>
+            <p>Avec cette option, après chaque tap la pile redevient <code>[Catégories, NouvelOnglet]</code> — toujours <strong>2 entrées max</strong>. Bug 1 résolu (retour propre).</p>
+            <p><code>saveState = true</code> dit : <em>« quand tu vires <code>Notes</code> de la pile, ne l'oublie pas complètement — garde son état (scroll, texte tapé, filtres) en mémoire »</em>. Couplé à <code>restoreState = true</code>, on retrouvera l'état au retour.</p>
+            <blockquote>
+                <p><strong>Convention</strong> : on <code>popUpTo</code> toujours la <strong>start destination</strong> de l'app. Ici c'est <code>Routes.CATEGORIES</code> (décidée à l'étape 3, Q4 du grill). Si on changeait l'écran d'accueil, il faudrait changer cette ligne aussi.</p>
+            </blockquote>
+
+            <h5><code>launchSingleTop = true</code></h5>
+            <p><em>« Si la destination demandée est <strong>déjà</strong> au sommet de la pile, ne crée pas une nouvelle instance — garde celle qui est là. »</em></p>
+            <p>Si l'utilisateur tape 5 fois Notes alors qu'il est déjà sur Notes, sans cette option chaque tap empile un <code>Notes</code>. Avec, le 1er tap pousse <code>Notes</code> (parce qu'il vient de Catégories), et les 4 suivants ne font <strong>rien</strong> (Notes est déjà au sommet). Bug 3 résolu.</p>
+
+            <h5><code>restoreState = true</code></h5>
+            <p><em>« Quand on arrive sur une destination, si on a un état sauvegardé pour elle, restaure-le. »</em></p>
+            <p>Couplé avec le <code>saveState = true</code> du <code>popUpTo</code>. C'est le complément qui ferme la boucle :</p>
+            <ul>
+                <li><code>saveState</code> = « n'oublie pas l'état quand tu vires »</li>
+                <li><code>restoreState</code> = « ressers-le quand on revient »</li>
+            </ul>
+            <p>Sans <code>restoreState</code>, <code>saveState</code> ne sert à rien : tu sauves dans le vide. Bug 2 résolu : revenir sur Notes restaure scroll, recherche, etc.</p>
+
+            <h4>Pile finale avec le pattern complet</h4>
+
+            <p>Mêmes 5 taps que tout à l'heure, mais avec les 3 options activées :</p>
+
+            <table>
+                <thead>
+                <tr><th>Étape</th><th>Action</th><th>Pile</th><th>Commentaire</th></tr>
+                </thead>
+                <tbody>
+                <tr><td>0</td><td>Démarrage</td><td><code>[Catégories]</code></td><td></td></tr>
+                <tr><td>1</td><td>Tap Notes</td><td><code>[Catégories, Notes]</code></td><td></td></tr>
+                <tr><td>2</td><td>Tap Tags</td><td><code>[Catégories, Tags]</code></td><td><code>popUpTo</code> a viré Notes (état sauvé)</td></tr>
+                <tr><td>3</td><td>Tap Notes</td><td><code>[Catégories, Notes]</code></td><td><code>popUpTo</code> a viré Tags (état sauvé), <code>restoreState</code> ressort le Notes d'avant</td></tr>
+                <tr><td>4</td><td>Tap Catégories</td><td><code>[Catégories]</code></td><td><code>popUpTo</code> viré, on est déjà sur la start</td></tr>
+                <tr><td>5</td><td>Tap Notes</td><td><code>[Catégories, Notes]</code></td><td></td></tr>
+                </tbody>
+            </table>
+
+            <p><strong>Toujours 2 entrées max</strong>. Un seul tap retour = dépile vers Catégories. Un deuxième = ferme l'app. Comportement Android attendu.</p>
+
+            <div class="recap">
+                <p><strong>En une phrase</strong> : sans le pattern, la pile grossit à chaque tap d'onglet (bug 1), l'état est perdu à chaque switch (bug 2), et les onglets s'empilent en doublons (bug 3). Les 3 options corrigent chacune un bug : <code>popUpTo</code> contrôle la pile (1), <code>saveState</code>+<code>restoreState</code> conservent l'état (2), <code>launchSingleTop</code> évite les doublons (3).</p>
             </div>
         </article>
 
