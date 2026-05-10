@@ -2775,6 +2775,95 @@ for (tab in tabs) {
             </div>
         </article>
 
+        <article class="entry" id="box-column-row">
+            <h3><code>Box</code> vs <code>Column</code> vs <code>Row</code> — pourquoi mes textes se chevauchent</h3>
+
+            <p class="question">« Dans <code>CategoriesScreen</code>, j'ai mis deux <code>Text</code> et un <code>Spacer</code> à l'intérieur d'un <code>Box</code>, et mes textes se chevauchent au centre de l'écran. Pourquoi ? »</p>
+
+            <p>Code de départ :</p>
+
+            <pre><code>Box(
+    modifier = Modifier.fillMaxSize(),
+    contentAlignment = Alignment.Center
+) {
+    Text("Bienvenue sur SmartNotes")
+    Spacer(modifier = Modifier.height(20.dp))
+    Text("Catégories")
+}</code></pre>
+
+            <h4>Diagnostic : <code>Box</code> empile en couches, pas en colonnes</h4>
+
+            <p>Le coupable, c'est <code>Box</code>. <strong><code>Box</code> est un conteneur qui empile ses enfants en <em>couches</em></strong>, comme une pile de cartes posées les unes <strong>par-dessus</strong> les autres (axe Z, profondeur). Tous les enfants partagent le même rectangle parent et sont positionnés selon <code>contentAlignment</code> (ici <code>Center</code>).</p>
+
+            <p>Donc dans le code ci-dessus :</p>
+            <ul>
+                <li><strong>1<sup>ère</sup> couche</strong> : le <code>Text("Bienvenue sur SmartNotes")</code> est posé au centre du Box.</li>
+                <li><strong>2<sup>ème</sup> couche</strong> : le <code>Spacer</code> (20dp de haut, 0 de large) est posé au centre du Box <em>aussi</em>. Il ne <strong>pousse pas</strong> ses voisins, parce que dans un <code>Box</code> il n'y a pas de "voisins au sens à côté" — ils sont <strong>superposés</strong>.</li>
+                <li><strong>3<sup>ème</sup> couche</strong> : le <code>Text("Catégories")</code> est posé au centre du Box, donc <strong>par-dessus</strong> les deux précédents.</li>
+            </ul>
+
+            <p>Résultat visuel : les deux <code>Text</code> se chevauchent au pixel près au centre de l'écran. Le <code>Spacer</code> est totalement inutile ici.</p>
+
+            <blockquote>
+                <p><strong>Analogie</strong> : <code>Box</code> = transparents posés sur le rétroprojecteur, tous projetés au même endroit. Si tu veux des éléments <em>l'un sous l'autre</em>, il te faut une étagère, pas un tas.</p>
+            </blockquote>
+
+            <h4>Les 3 conteneurs de layout de base en Compose</h4>
+
+            <table>
+                <thead>
+                <tr><th>Conteneur</th><th>Disposition</th><th>Analogie</th><th>Quand l'utiliser</th></tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td><code>Box</code></td>
+                    <td>Empile en <strong>couches</strong> (axe Z)</td>
+                    <td>Pile de transparents</td>
+                    <td>Superposer (badge sur icône, texte sur image, overlay…)</td>
+                </tr>
+                <tr>
+                    <td><code>Column</code></td>
+                    <td>Empile <strong>verticalement</strong> (axe Y, du haut vers le bas)</td>
+                    <td>Pile d'assiettes</td>
+                    <td>Un titre + un texte + un bouton les uns au-dessous des autres</td>
+                </tr>
+                <tr>
+                    <td><code>Row</code></td>
+                    <td>Aligne <strong>horizontalement</strong> (axe X, de gauche à droite)</td>
+                    <td>File d'attente</td>
+                    <td>Une icône + un label côte à côte</td>
+                </tr>
+                </tbody>
+            </table>
+
+            <h4>Pourquoi le <code>Spacer</code> ne marche pas dans un <code>Box</code></h4>
+
+            <p>Le <code>Spacer</code> ne fonctionne <strong>qu'à l'intérieur d'une <code>Column</code> ou d'une <code>Row</code></strong>, parce qu'il a besoin d'un <strong>axe principal</strong> pour pousser les voisins :</p>
+            <ul>
+                <li>Dans une <code>Column</code>, <code>Spacer(Modifier.height(20.dp))</code> ajoute 20dp <em>verticalement</em> entre l'élément précédent et le suivant.</li>
+                <li>Dans une <code>Row</code>, on utiliserait plutôt <code>Spacer(Modifier.width(20.dp))</code> pour ajouter 20dp <em>horizontalement</em>.</li>
+                <li>Dans un <code>Box</code>, il n'y a pas d'axe principal — juste des couches superposées. Le <code>Spacer</code> est donc juste un rectangle invisible posé en couche, sans effet de poussée.</li>
+            </ul>
+
+            <h4>Deux façons de fixer le bug</h4>
+
+            <h5>Option 1 — Remplacer <code>Box</code> par <code>Column</code></h5>
+            <p>La <code>Column</code> empile verticalement, donc le <code>Spacer</code> y joue son rôle naturellement. Pour centrer le contenu de la Column dans l'écran, on combine deux paramètres :</p>
+            <ul>
+                <li><code>verticalArrangement = Arrangement.Center</code> — centre le bloc <em>verticalement</em> dans la hauteur disponible ;</li>
+                <li><code>horizontalAlignment = Alignment.CenterHorizontally</code> — centre chaque enfant <em>horizontalement</em> dans la largeur de la Column.</li>
+            </ul>
+
+            <p>C'est l'équivalent <code>Column</code> du <code>contentAlignment = Alignment.Center</code> qu'on avait sur <code>Box</code>, mais découpé en deux axes parce qu'une Column raisonne par axe (principal = vertical, transversal = horizontal).</p>
+
+            <h5>Option 2 — Imbriquer une <code>Column</code> dans un <code>Box</code></h5>
+            <p>On garde le <code>Box</code> qui occupe l'écran entier et centre son contenu, et on met une <code>Column</code> à l'intérieur qui contient les 2 <code>Text</code> et le <code>Spacer</code>. Utile si plus tard on veut ajouter un élément en surcouche absolue (ex : une bannière en haut, un FAB en bas).</p>
+
+            <div class="recap">
+                <p><strong>En une phrase</strong> : <code>Box</code> superpose, <code>Column</code> empile verticalement, <code>Row</code> aligne horizontalement. Si tu veux écarter deux éléments avec <code>Spacer</code>, il te faut une <code>Column</code> ou une <code>Row</code> — jamais un <code>Box</code>.</p>
+            </div>
+        </article>
+
     </section>
 
     <footer>
